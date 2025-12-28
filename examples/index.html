@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SWP Charting - Eksempel</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding: 40px;
+      background: #f5f5f5;
+      margin: 0;
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+    p {
+      color: #666;
+      margin-bottom: 30px;
+    }
+    .chart-container {
+      background: #fff;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 30px;
+    }
+    h2 {
+      color: #333;
+      font-size: 16px;
+      margin: 0 0 20px 0;
+    }
+    #chart1, #chart2, #chart3, #chart4, #chart5, #chart6, #chart7, #chart8 {
+      width: 100%;
+      max-width: 700px;
+    }
+  </style>
+</head>
+<body>
+  <h1>SWP Charting Library</h1>
+  <p>Minimalistisk TypeScript charting library med SVG rendering</p>
+
+  <div class="chart-container">
+    <h2>Smooth kurver med gradient (default)</h2>
+    <div id="chart1"></div>
+  </div>
+
+  <div class="chart-container">
+    <h2>Lineære kurver med små punkter</h2>
+    <div id="chart2"></div>
+  </div>
+
+  <div class="chart-container">
+    <h2>Sparse data - forskellige måneder</h2>
+    <div id="chart3"></div>
+  </div>
+
+  <div class="chart-container">
+    <h2>Søjlediagram - alle konfigurationsmuligheder</h2>
+    <div id="chart4"></div>
+  </div>
+
+  <div class="chart-container">
+    <h2>Grupperede søjler - standard indstillinger</h2>
+    <div id="chart5"></div>
+  </div>
+
+  <div class="chart-container">
+    <h2>Pie Chart</h2>
+    <div id="chart6"></div>
+  </div>
+
+  <div class="chart-container">
+    <h2>Donut Chart (legend til højre)</h2>
+    <div id="chart7"></div>
+  </div>
+
+  <div class="chart-container">
+    <h2>Pie Chart med breakdown (hover for detaljer)</h2>
+    <div id="chart8"></div>
+  </div>
+
+  <div class="chart-container" style="max-width: 900px">
+    <h2>Komplet Konfigurationsreference</h2>
+    <pre style="background: #1e1e1e; color: #d4d4d4; padding: 20px; border-radius: 6px; overflow-x: auto; font-size: 13px; line-height: 1.5;"><code><span style="color:#6a9955">// createChart(container, options)</span>
+
+{
+  <span style="color:#6a9955">// === CHART DIMENSIONER ===</span>
+  <span style="color:#9cdcfe">width</span>: <span style="color:#b5cea8">650</span>,                    <span style="color:#6a9955">// number (default: container width)</span>
+  <span style="color:#9cdcfe">height</span>: <span style="color:#b5cea8">350</span>,                   <span style="color:#6a9955">// number (default: 350)</span>
+  <span style="color:#9cdcfe">padding</span>: {
+    <span style="color:#9cdcfe">top</span>: <span style="color:#b5cea8">30</span>,                     <span style="color:#6a9955">// number (default: 30)</span>
+    <span style="color:#9cdcfe">right</span>: <span style="color:#b5cea8">40</span>,                   <span style="color:#6a9955">// number (default: 40)</span>
+    <span style="color:#9cdcfe">bottom</span>: <span style="color:#b5cea8">40</span>,                  <span style="color:#6a9955">// number (default: 40)</span>
+    <span style="color:#9cdcfe">left</span>: <span style="color:#b5cea8">60</span>,                    <span style="color:#6a9955">// number (default: 60)</span>
+  },
+
+  <span style="color:#6a9955">// === X-AKSE ===</span>
+  <span style="color:#9cdcfe">xAxis</span>: {
+    <span style="color:#9cdcfe">categories</span>: [<span style="color:#ce9178">'Jan'</span>, <span style="color:#ce9178">'Feb'</span>, ...]  <span style="color:#6a9955">// string[] - påkrævet</span>
+  },
+
+  <span style="color:#6a9955">// === Y-AKSE ===</span>
+  <span style="color:#9cdcfe">yAxis</span>: {
+    <span style="color:#9cdcfe">min</span>: <span style="color:#b5cea8">0</span>,                      <span style="color:#6a9955">// number (default: 0)</span>
+    <span style="color:#9cdcfe">max</span>: <span style="color:#b5cea8">1000</span>,                   <span style="color:#6a9955">// number (default: auto)</span>
+    <span style="color:#9cdcfe">ticks</span>: <span style="color:#b5cea8">5</span>,                    <span style="color:#6a9955">// number - antal grid linjer</span>
+    <span style="color:#9cdcfe">format</span>: (v) => <span style="color:#ce9178">`${v} kr`</span>,   <span style="color:#6a9955">// (value: number) => string</span>
+  },
+
+  <span style="color:#6a9955">// === SERIER ===</span>
+  <span style="color:#9cdcfe">series</span>: [{
+    <span style="color:#9cdcfe">name</span>: <span style="color:#ce9178">'Serie navn'</span>,          <span style="color:#6a9955">// string - påkrævet</span>
+    <span style="color:#9cdcfe">color</span>: <span style="color:#ce9178">'#8b5cf6'</span>,            <span style="color:#6a9955">// string - påkrævet</span>
+    <span style="color:#9cdcfe">data</span>: [{ <span style="color:#9cdcfe">x</span>: <span style="color:#ce9178">'Jan'</span>, <span style="color:#9cdcfe">y</span>: <span style="color:#b5cea8">100</span> }], <span style="color:#6a9955">// DataPoint[] - påkrævet</span>
+    <span style="color:#9cdcfe">type</span>: <span style="color:#ce9178">'line'</span>,                <span style="color:#6a9955">// 'line' | 'bar' (default: 'line')</span>
+    <span style="color:#9cdcfe">showArea</span>: <span style="color:#569cd6">true</span>,              <span style="color:#6a9955">// boolean (default: true)</span>
+
+    <span style="color:#6a9955">// LINE STYLING (kun for type: 'line')</span>
+    <span style="color:#9cdcfe">line</span>: {
+      <span style="color:#9cdcfe">width</span>: <span style="color:#b5cea8">2</span>,                  <span style="color:#6a9955">// number (default: 2)</span>
+      <span style="color:#9cdcfe">opacity</span>: <span style="color:#b5cea8">1</span>,                <span style="color:#6a9955">// number 0-1 (default: 1)</span>
+      <span style="color:#9cdcfe">curve</span>: <span style="color:#ce9178">'smooth'</span>,           <span style="color:#6a9955">// 'smooth' | 'linear' (default: 'smooth')</span>
+    },
+
+    <span style="color:#6a9955">// POINT STYLING (kun for type: 'line')</span>
+    <span style="color:#9cdcfe">point</span>: {
+      <span style="color:#9cdcfe">style</span>: <span style="color:#ce9178">'circle'</span>,           <span style="color:#6a9955">// 'circle' | 'dot' (default: 'circle')</span>
+      <span style="color:#9cdcfe">radius</span>: <span style="color:#b5cea8">6</span>,                 <span style="color:#6a9955">// number (default: 6 for circle, 4 for dot)</span>
+      <span style="color:#9cdcfe">fill</span>: <span style="color:#ce9178">'#fff'</span>,              <span style="color:#6a9955">// string (default: '#fff' for circle)</span>
+      <span style="color:#9cdcfe">stroke</span>: <span style="color:#ce9178">'#8b5cf6'</span>,         <span style="color:#6a9955">// string (default: series color)</span>
+      <span style="color:#9cdcfe">strokeWidth</span>: <span style="color:#b5cea8">2</span>,            <span style="color:#6a9955">// number (default: 2)</span>
+      <span style="color:#9cdcfe">hoverRadius</span>: <span style="color:#b5cea8">8</span>,            <span style="color:#6a9955">// number (default: radius + 2)</span>
+    },
+
+    <span style="color:#6a9955">// AREA STYLING (kun for type: 'line')</span>
+    <span style="color:#9cdcfe">area</span>: {
+      <span style="color:#9cdcfe">opacity</span>: <span style="color:#b5cea8">0.3</span>,              <span style="color:#6a9955">// number 0-1 (default: 0.3)</span>
+      <span style="color:#9cdcfe">gradient</span>: {                <span style="color:#6a9955">// GradientConfig | boolean (default: true)</span>
+        <span style="color:#9cdcfe">startOpacity</span>: <span style="color:#b5cea8">0.4</span>,       <span style="color:#6a9955">// number (default: 0.4)</span>
+        <span style="color:#9cdcfe">endOpacity</span>: <span style="color:#b5cea8">0.05</span>,        <span style="color:#6a9955">// number (default: 0.05)</span>
+      },
+    },
+
+    <span style="color:#6a9955">// BAR STYLING (kun for type: 'bar')</span>
+    <span style="color:#9cdcfe">bar</span>: {
+      <span style="color:#9cdcfe">width</span>: <span style="color:#b5cea8">20</span>,                 <span style="color:#6a9955">// number | 'auto' (default: 20)</span>
+      <span style="color:#9cdcfe">radius</span>: <span style="color:#b5cea8">0</span>,                 <span style="color:#6a9955">// number (default: 0)</span>
+      <span style="color:#9cdcfe">opacity</span>: <span style="color:#b5cea8">1</span>,                <span style="color:#6a9955">// number 0-1 (default: 1)</span>
+    },
+  }],
+
+  <span style="color:#6a9955">// === TOOLTIP ===</span>
+  <span style="color:#9cdcfe">tooltip</span>: {                       <span style="color:#6a9955">// TooltipConfig | boolean (default: true)</span>
+    <span style="color:#9cdcfe">animation</span>: {
+      <span style="color:#9cdcfe">duration</span>: <span style="color:#b5cea8">150</span>,             <span style="color:#6a9955">// number ms (default: 150)</span>
+      <span style="color:#9cdcfe">easing</span>: <span style="color:#ce9178">'ease-out'</span>,        <span style="color:#6a9955">// string (default: 'ease-out')</span>
+    },
+    <span style="color:#9cdcfe">render</span>: (data) => <span style="color:#ce9178">`...`</span>,      <span style="color:#6a9955">// custom render function</span>
+  },
+
+  <span style="color:#6a9955">// === LEGEND ===</span>
+  <span style="color:#9cdcfe">legend</span>: {                        <span style="color:#6a9955">// LegendConfig | boolean (default: false)</span>
+    <span style="color:#9cdcfe">position</span>: <span style="color:#ce9178">'top'</span>,              <span style="color:#6a9955">// 'top' | 'bottom' | 'left' | 'right'</span>
+    <span style="color:#9cdcfe">align</span>: <span style="color:#ce9178">'center'</span>,             <span style="color:#6a9955">// 'start' | 'center' | 'end'</span>
+  },
+
+  <span style="color:#6a9955">// === ANIMATION ===</span>
+  <span style="color:#9cdcfe">animation</span>: {                     <span style="color:#6a9955">// AnimationConfig | boolean (default: true)</span>
+    <span style="color:#9cdcfe">enabled</span>: <span style="color:#569cd6">true</span>,               <span style="color:#6a9955">// boolean (default: true)</span>
+    <span style="color:#9cdcfe">duration</span>: <span style="color:#b5cea8">600</span>,               <span style="color:#6a9955">// number ms (default: 600)</span>
+    <span style="color:#9cdcfe">easing</span>: <span style="color:#ce9178">'ease-out'</span>,          <span style="color:#6a9955">// string (default: 'ease-out')</span>
+  },
+}
+
+<span style="color:#6a9955">// === CHART INSTANCE METODER ===</span>
+<span style="color:#569cd6">const</span> <span style="color:#4fc1ff">chart</span> = createChart(container, options);
+chart.<span style="color:#dcdcaa">update</span>({ series: [...] });  <span style="color:#6a9955">// Opdater chart</span>
+chart.<span style="color:#dcdcaa">resize</span>();                   <span style="color:#6a9955">// Gentegn ved resize</span>
+chart.<span style="color:#dcdcaa">destroy</span>();                  <span style="color:#6a9955">// Fjern og ryd op</span></code></pre>
+  </div>
+
+  <script type="module">
+    import { createChart } from '../dist/swp-charting.js';
+
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Maj', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dec'];
+
+    // Chart 1: Default smooth curves
+    createChart(document.getElementById('chart1'), {
+      width: 620,
+      height: 215,
+      xAxis: { categories: months },
+      series: [
+        {
+          name: 'Services',
+          color: '#8b5cf6',
+          data: [
+            { x: 'Mar', y: 350 },
+            { x: 'Apr', y: 400 },
+            { x: 'Jun', y: 850 },
+            { x: 'Aug', y: 350 },
+            { x: 'Okt', y: 920 },
+            { x: 'Dec', y: 380 },
+          ],
+        },
+        {
+          name: 'Produkter',
+          color: '#f59e0b',
+          data: [
+            { x: 'Mar', y: 30 },
+            { x: 'Apr', y: 180 },
+            { x: 'Jun', y: 150 },
+            { x: 'Aug', y: 250 },
+            { x: 'Okt', y: 200 },
+            { x: 'Dec', y: 120 },
+          ],
+        },
+      ],
+      yAxis: {
+        max: 1000,
+        format: (v) => v.toLocaleString('da-DK'),
+      },
+      legend: true,
+    });
+
+    // Chart 2: Linear curves with dot style
+    createChart(document.getElementById('chart2'), {
+      xAxis: { categories: months },
+      series: [
+        {
+          name: 'Omsætning',
+          color: '#10b981',
+          data: [
+            { x: 'Jan', y: 120 },
+            { x: 'Mar', y: 280 },
+            { x: 'Maj', y: 350 },
+            { x: 'Jul', y: 420 },
+            { x: 'Sep', y: 380 },
+            { x: 'Nov', y: 520 },
+          ],
+          line: { curve: 'linear', width: 2 },
+          point: { style: 'dot', radius: 4 },
+          showArea: false,
+        },
+      ],
+      legend: { position: 'top', align: 'end' },
+    });
+
+    // Chart 3: Sparse data with different x values per series
+    createChart(document.getElementById('chart3'), {
+      xAxis: { categories: months },
+      series: [
+        {
+          name: 'Team A',
+          color: '#3b82f6',
+          data: [
+            { x: 'Feb', y: 200 },
+            { x: 'Maj', y: 450 },
+            { x: 'Aug', y: 380 },
+            { x: 'Nov', y: 620 },
+          ],
+          point: { style: 'dot' },
+        },
+        {
+          name: 'Team B',
+          color: '#ef4444',
+          data: [
+            { x: 'Jan', y: 150 },
+            { x: 'Apr', y: 320 },
+            { x: 'Jul', y: 280 },
+            { x: 'Okt', y: 410 },
+          ],
+          point: { style: 'dot' },
+        },
+      ],
+      legend: true,
+      animation: { duration: 800 },
+    });
+
+    // Chart 4: Single bar series med alle bar-konfigurationsmuligheder
+    const quarters = ['Q1', 'Q2', 'Q3', 'Q4'];
+    createChart(document.getElementById('chart4'), {
+      xAxis: { categories: quarters },
+      series: [
+        {
+          name: 'Omsætning',
+          color: '#8b5cf6',
+          type: 'bar',           // 'bar' | 'line' (default: 'line')
+          data: [
+            { x: 'Q1', y: 420 },
+            { x: 'Q2', y: 580 },
+            { x: 'Q3', y: 350 },
+            { x: 'Q4', y: 720 },
+          ],
+          bar: {
+            width: 30,           // number | 'auto' (default: 20) - bredde i px
+            radius: 6,           // number (default: 0) - hjørneradius i px
+            opacity: 0.9,        // number 0-1 (default: 1) - gennemsigtighed
+          },
+        },
+      ],
+      yAxis: {
+        format: (v) => v.toLocaleString('da-DK') + ' kr',
+      },
+      legend: true,
+      animation: { duration: 600 },  // bars animerer op fra bunden
+    });
+
+    // Chart 5: Grupperede søjler med standard indstillinger
+    createChart(document.getElementById('chart5'), {
+      xAxis: { categories: quarters },
+      series: [
+        {
+          name: '2023',
+          color: '#3b82f6',
+          type: 'bar',
+          data: [
+            { x: 'Q1', y: 320 },
+            { x: 'Q2', y: 450 },
+            { x: 'Q3', y: 280 },
+            { x: 'Q4', y: 520 },
+          ],
+        },
+        {
+          name: '2024',
+          color: '#10b981',
+          type: 'bar',
+          data: [
+            { x: 'Q1', y: 420 },
+            { x: 'Q2', y: 580 },
+            { x: 'Q3', y: 350 },
+            { x: 'Q4', y: 720 },
+          ],
+        },
+      ],
+      yAxis: {
+        format: (v) => v.toLocaleString('da-DK'),
+      },
+      legend: { position: 'top', align: 'end' },
+    });
+
+    // Chart 6: Pie Chart
+    createChart(document.getElementById('chart6'), {
+      width: 400,
+      height: 300,
+      series: [
+        { name: 'Produkter', color: '#8b5cf6', type: 'pie', data: [{ x: '', y: 350 }] },
+        { name: 'Services', color: '#3b82f6', type: 'pie', data: [{ x: '', y: 280 }] },
+        { name: 'Licenser', color: '#10b981', type: 'pie', data: [{ x: '', y: 180 }] },
+        { name: 'Support', color: '#f59e0b', type: 'pie', data: [{ x: '', y: 120 }] },
+      ],
+      legend: true,
+    });
+
+    // Chart 7: Donut Chart med legend til højre
+    createChart(document.getElementById('chart7'), {
+      width: 450,
+      height: 300,
+      series: [
+        { name: 'Q1', color: '#8b5cf6', type: 'pie', data: [{ x: '', y: 420 }], pie: { innerRadius: 40 } },
+        { name: 'Q2', color: '#3b82f6', type: 'pie', data: [{ x: '', y: 580 }], pie: { innerRadius: 40 } },
+        { name: 'Q3', color: '#10b981', type: 'pie', data: [{ x: '', y: 350 }], pie: { innerRadius: 40 } },
+        { name: 'Q4', color: '#f59e0b', type: 'pie', data: [{ x: '', y: 720 }], pie: { innerRadius: 40 } },
+      ],
+      legend: { position: 'right', align: 'center' },
+    });
+
+    // Chart 8: Pie Chart med breakdown data og enhed
+    createChart(document.getElementById('chart8'), {
+      width: 400,
+      height: 300,
+      series: [
+        {
+          name: 'Syg',
+          color: '#ef4444',
+          type: 'pie',
+          unit: 't',
+          data: [
+            { x: 'Henrik', y: 2 },
+            { x: 'Peter', y: 10 },
+          ]
+        },
+        {
+          name: 'Ferie',
+          color: '#3b82f6',
+          type: 'pie',
+          unit: 't',
+          data: [
+            { x: 'Henrik', y: 5 },
+            { x: 'Peter', y: 3 },
+          ]
+        },
+        {
+          name: 'Fri',
+          color: '#10b981',
+          type: 'pie',
+          unit: 't',
+          data: [
+            { x: 'Henrik', y: 2 },
+            { x: 'Peter', y: 2 },
+          ]
+        },
+      ],
+      legend: true,
+    });
+
+    // =========================================================================
+    // KOMPLET KONFIGURATIONSREFERENCE
+    // =========================================================================
+    //
+    // createChart(container, {
+    //
+    //   // === CHART DIMENSIONER ===
+    //   width: 650,                    // number (default: container width)
+    //   height: 350,                   // number (default: 350)
+    //   padding: {
+    //     top: 30,                     // number (default: 30)
+    //     right: 40,                   // number (default: 40)
+    //     bottom: 40,                  // number (default: 40)
+    //     left: 60,                    // number (default: 60)
+    //   },
+    //
+    //   // === X-AKSE ===
+    //   xAxis: {
+    //     categories: ['Jan', 'Feb', 'Mar', ...]  // string[] - påkrævet
+    //   },
+    //
+    //   // === Y-AKSE ===
+    //   yAxis: {
+    //     min: 0,                      // number (default: 0)
+    //     max: 1000,                   // number (default: auto-beregnet)
+    //     ticks: 5,                    // number - antal grid linjer
+    //     format: (v) => `${v} kr`,    // (value: number) => string
+    //   },
+    //
+    //   // === SERIER ===
+    //   series: [
+    //     {
+    //       name: 'Serie navn',        // string - påkrævet
+    //       color: '#8b5cf6',          // string - påkrævet
+    //       data: [                    // DataPoint[] - påkrævet
+    //         { x: 'Jan', y: 100 },
+    //         { x: 'Mar', y: 200 },
+    //       ],
+    //       type: 'line',              // 'line' | 'bar' (default: 'line')
+    //       showArea: true,            // boolean (default: true for line)
+    //
+    //       // --- LINE STYLING (kun for type: 'line') ---
+    //       line: {
+    //         width: 2,                // number (default: 2)
+    //         opacity: 1,              // number 0-1 (default: 1)
+    //         curve: 'smooth',         // 'smooth' | 'linear' (default: 'smooth')
+    //       },
+    //
+    //       // --- POINT STYLING (kun for type: 'line') ---
+    //       point: {
+    //         style: 'circle',         // 'circle' | 'dot' (default: 'circle')
+    //         radius: 6,               // number (default: 6 for circle, 4 for dot)
+    //         fill: '#fff',            // string (default: '#fff' for circle)
+    //         stroke: '#8b5cf6',       // string (default: series color)
+    //         strokeWidth: 2,          // number (default: 2)
+    //         hoverRadius: 8,          // number (default: radius + 2)
+    //       },
+    //
+    //       // --- AREA STYLING (kun for type: 'line') ---
+    //       area: {
+    //         opacity: 0.3,            // number 0-1 (default: 0.3)
+    //         gradient: {              // GradientConfig | boolean (default: true)
+    //           startOpacity: 0.4,     // number (default: 0.4)
+    //           endOpacity: 0.05,      // number (default: 0.05)
+    //           startOffset: '0%',     // string (default: '0%')
+    //           endOffset: '100%',     // string (default: '100%')
+    //         },
+    //       },
+    //
+    //       // --- BAR STYLING (kun for type: 'bar') ---
+    //       bar: {
+    //         width: 20,               // number | 'auto' (default: 20)
+    //         radius: 0,               // number (default: 0)
+    //         opacity: 1,              // number 0-1 (default: 1)
+    //       },
+    //     },
+    //   ],
+    //
+    //   // === TOOLTIP ===
+    //   tooltip: {                     // TooltipConfig | boolean (default: true)
+    //     animation: {
+    //       duration: 150,             // number ms (default: 150)
+    //       easing: 'ease-out',        // string (default: 'ease-out')
+    //     },
+    //     render: (data) => {          // custom render function
+    //       // data = { x: 'Jan', values: [{ name, value, color }] }
+    //       return `<div>${data.x}: ${data.values[0].value}</div>`;
+    //     },
+    //   },
+    //
+    //   // === LEGEND ===
+    //   legend: {                      // LegendConfig | boolean (default: false)
+    //     position: 'top',             // 'top' | 'bottom' | 'left' | 'right'
+    //     align: 'center',             // 'start' | 'center' | 'end'
+    //   },
+    //
+    //   // === ANIMATION ===
+    //   animation: {                   // AnimationConfig | boolean (default: true)
+    //     enabled: true,               // boolean (default: true)
+    //     duration: 600,               // number ms (default: 600)
+    //     easing: 'ease-out',          // string (default: 'ease-out')
+    //   },
+    //
+    // });
+    //
+    // =========================================================================
+    // CHART INSTANCE METODER
+    // =========================================================================
+    //
+    // const chart = createChart(container, options);
+    //
+    // chart.update({ series: [...] });  // Opdater chart med nye options
+    // chart.resize();                   // Gentegn chart (ved resize)
+    // chart.destroy();                  // Fjern chart og ryd op
+    //
+  </script>
+</body>
+</html>

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px;
+      background: #fff;
+    }
+    .tooltip {
+      position: absolute;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 8px 12px;
+      font-size: 12px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      pointer-events: none;
+      opacity: 0;
+      transition: left 0.15s linear, top 0.15s linear, opacity 0.15s ease-out;
+    }
+    .legend {
+      display: flex;
+      gap: 30px;
+      margin-top: 20px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: #666;
+    }
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+  </style>
+</head>
+<body>
+  <div id="chart"></div>
+  <div class="legend">
+    <div class="legend-item">
+      <div class="legend-dot" style="background: #8b5cf6"></div>
+      <span>Services</span>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot" style="background: #f59e0b"></div>
+      <span>Produkter</span>
+    </div>
+  </div>
+  <div id="tooltip" class="tooltip"></div>
+
+  <script>
+    const data = [
+      { x: 'Mar', y1: 350, y2: 30 },
+      { x: 'Apr', y1: 400, y2: 180 },
+      { x: 'Jun', y1: 850, y2: 150 },
+      { x: 'Aug', y1: 350, y2: 250 },
+      { x: 'Okt', y1: 920, y2: 200 },
+      { x: 'Dec', y1: 380, y2: 120 },
+    ];
+
+    const width = 650;
+    const height = 350;
+    const padding = { top: 30, right: 40, bottom: 40, left: 60 };
+    const chartWidth = width - padding.left - padding.right;
+    const chartHeight = height - padding.top - padding.bottom;
+
+    const yMax = 1000;
+
+    const scaleX = (i) => padding.left + (i / (data.length - 1)) * chartWidth;
+    const scaleY = (y) => padding.top + chartHeight - (y / yMax) * chartHeight;
+
+    const points1 = data.map((d, i) => ({ 
+      x: scaleX(i), 
+      y: scaleY(d.y1), 
+      dataX: d.x, 
+      dataY: d.y1 
+    }));
+    const points2 = data.map((d, i) => ({ 
+      x: scaleX(i), 
+      y: scaleY(d.y2), 
+      dataX: d.x, 
+      dataY: d.y2 
+    }));
+
+    // Monotone cubic spline (Fritsch-Carlson) - no overshoot
+    function monotoneCurve(pts) {
+      if (pts.length < 2) return '';
+      const n = pts.length;
+      
+      // Calculate slopes between points
+      const dx = [];
+      const dy = [];
+      const m = []; // slopes
+      
+      for (let i = 0; i < n - 1; i++) {
+        dx[i] = pts[i + 1].x - pts[i].x;
+        dy[i] = pts[i + 1].y - pts[i].y;
+        m[i] = dy[i] / dx[i];
+      }
+      
+      // Calculate tangents with monotonicity constraint
+      const tangents = [];
+      tangents[0] = m[0];
+      tangents[n - 1] = m[n - 2];
+      
+      for (let i = 1; i < n - 1; i++) {
+        if (m[i - 1] * m[i] <= 0) {
+          // Local extremum - tangent should be 0
+          tangents[i] = 0;
+        } else {
+          // Harmonic mean for monotonicity
+          tangents[i] = (m[i - 1] + m[i]) / 2;
+          
+          // Clamp to ensure no overshoot (Fritsch-Carlson)
+          const maxSlope = 3 * Math.min(Math.abs(m[i - 1]), Math.abs(m[i]));
+          if (Math.abs(tangents[i]) > maxSlope) {
+            tangents[i] = Math.sign(tangents[i]) * maxSlope;
+          }
+        }
+      }
+
+      let path = `M ${pts[0].x},${pts[0].y}`;
+      
+      for (let i = 0; i < n - 1; i++) {
+        const p0 = pts[i];
+        const p1 = pts[i + 1];
+        const segDx = dx[i] / 3;
+        
+        const cp1x = p0.x + segDx;
+        const cp1y = p0.y + segDx * tangents[i];
+        const cp2x = p1.x - segDx;
+        const cp2y = p1.y - segDx * tangents[i + 1];
+        
+        path += ` C ${cp1x},${cp1y} ${cp2x},${cp2y} ${p1.x},${p1.y}`;
+      }
+      
+      return path;
+    }
+
+    function createSVGElement(tag, attrs) {
+      const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+      for (const [key, val] of Object.entries(attrs)) {
+        el.setAttribute(key, val);
+      }
+      return el;
+    }
+
+    const svg = createSVGElement('svg', { width, height });
+    const tooltip = document.getElementById('tooltip');
+
+    // Defs for gradients
+    const defs = createSVGElement('defs', {});
+    
+    // Purple gradient
+    const grad1 = createSVGElement('linearGradient', { id: 'purpleGrad', x1: '0', y1: '0', x2: '0', y2: '1' });
+    const stop1a = createSVGElement('stop', { offset: '0%', 'stop-color': '#8b5cf6', 'stop-opacity': '0.4' });
+    const stop1b = createSVGElement('stop', { offset: '40%', 'stop-color': '#8b5cf6', 'stop-opacity': '0.05' });
+    grad1.appendChild(stop1a);
+    grad1.appendChild(stop1b);
+    defs.appendChild(grad1);
+
+    // Orange gradient
+    const grad2 = createSVGElement('linearGradient', { id: 'orangeGrad', x1: '0', y1: '0', x2: '0', y2: '1' });
+    const stop2a = createSVGElement('stop', { offset: '0%', 'stop-color': '#f59e0b', 'stop-opacity': '0.4' });
+    const stop2b = createSVGElement('stop', { offset: '40%', 'stop-color': '#f59e0b', 'stop-opacity': '0.05' });
+    grad2.appendChild(stop2a);
+    grad2.appendChild(stop2b);
+    defs.appendChild(grad2);
+
+    svg.appendChild(defs);
+
+    // Y axis grid lines and labels
+    const yTicks = [200, 400, 600, 800, 1000];
+    yTicks.forEach(tick => {
+      svg.appendChild(createSVGElement('line', {
+        x1: padding.left, y1: scaleY(tick), x2: width - padding.right, y2: scaleY(tick),
+        stroke: '#f0f0f0', 'stroke-width': 1
+      }));
+      const text = createSVGElement('text', {
+        x: padding.left - 15, y: scaleY(tick) + 4,
+        'text-anchor': 'end', 'font-size': 12, fill: '#999'
+      });
+      text.textContent = tick === 1000 ? '1,000' : tick;
+      svg.appendChild(text);
+    });
+
+    const series = [
+      { points: points1, color: '#8b5cf6', gradient: 'url(#purpleGrad)', name: 'Services' },
+      { points: points2, color: '#f59e0b', gradient: 'url(#orangeGrad)', name: 'Produkter' },
+    ];
+
+    // Area fills
+    series.forEach(s => {
+      const linePath = monotoneCurve(s.points);
+      const areaPath = linePath + 
+        ` L ${s.points[s.points.length-1].x},${padding.top + chartHeight}` +
+        ` L ${s.points[0].x},${padding.top + chartHeight} Z`;
+      
+      svg.appendChild(createSVGElement('path', {
+        d: areaPath, fill: s.gradient, stroke: 'none'
+      }));
+    });
+
+    // Lines
+    series.forEach(s => {
+      svg.appendChild(createSVGElement('path', {
+        d: monotoneCurve(s.points), fill: 'none', stroke: s.color, 'stroke-width': 2.5
+      }));
+    });
+
+    // X axis labels
+    data.forEach((d, i) => {
+      const text = createSVGElement('text', {
+        x: scaleX(i), y: height - padding.bottom + 25,
+        'text-anchor': 'middle', 'font-size': 12, fill: '#999'
+      });
+      text.textContent = d.x;
+      svg.appendChild(text);
+    });
+
+    // Hover line
+    const hoverLine = createSVGElement('line', {
+      x1: 0, y1: padding.top, x2: 0, y2: padding.top + chartHeight,
+      stroke: '#ddd', 'stroke-width': 1, opacity: 0
+    });
+    svg.appendChild(hoverLine);
+
+    // Data points
+    const circles = [];
+    series.forEach((s, sIdx) => {
+      s.points.forEach((p, i) => {
+        const circle = createSVGElement('circle', {
+          cx: p.x, 
+          cy: p.y, 
+          r: 5, 
+          fill: '#fff', 
+          stroke: s.color, 
+          'stroke-width': 2.5
+        });
+        circles.push({ el: circle, seriesIdx: sIdx, pointIdx: i });
+        svg.appendChild(circle);
+      });
+    });
+
+    // Hover area for hele grafen
+    const hoverArea = createSVGElement('rect', {
+      x: padding.left, y: padding.top, width: chartWidth, height: chartHeight,
+      fill: 'transparent', style: 'cursor: pointer'
+    });
+
+    let currentIdx = -1;
+
+    hoverArea.addEventListener('mousemove', (e) => {
+      const rect = svg.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      
+      // Find nærmeste punkt
+      let nearestIdx = 0;
+      let nearestDist = Infinity;
+      points1.forEach((p, i) => {
+        const dist = Math.abs(p.x - mouseX);
+        if (dist < nearestDist) {
+          nearestDist = dist;
+          nearestIdx = i;
+        }
+      });
+
+      const p = points1[nearestIdx];
+      
+      hoverLine.setAttribute('x1', p.x);
+      hoverLine.setAttribute('x2', p.x);
+      hoverLine.setAttribute('opacity', 1);
+      
+      circles.forEach(c => {
+        c.el.setAttribute('r', c.pointIdx === nearestIdx ? 7 : 5);
+      });
+
+      if (currentIdx !== nearestIdx) {
+        tooltip.innerHTML = `
+          <div style="font-weight: 600; margin-bottom: 4px">${data[nearestIdx].x}</div>
+          <div style="color: #8b5cf6">Services: ${points1[nearestIdx].dataY}</div>
+          <div style="color: #f59e0b">Produkter: ${points2[nearestIdx].dataY}</div>
+        `;
+        currentIdx = nearestIdx;
+      }
+
+      tooltip.style.left = (p.x + 75) + 'px';
+      tooltip.style.top = (p.y + 60) + 'px';
+      tooltip.style.opacity = '1';
+    });
+
+    hoverArea.addEventListener('mouseleave', () => {
+      hoverLine.setAttribute('opacity', 0);
+      circles.forEach(c => c.el.setAttribute('r', 5));
+      tooltip.style.opacity = '0';
+      currentIdx = -1;
+    });
+
+    svg.appendChild(hoverArea);
+
+    document.getElementById('chart').appendChild(svg);
+  </script>
+</body>
+</html>
