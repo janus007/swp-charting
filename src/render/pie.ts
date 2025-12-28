@@ -14,6 +14,7 @@ export interface PieSlice {
   percent: number;
   color: string;
   unit?: string;
+  id?: string;  // ID from first data point for click events
   startAngle: number;
   endAngle: number;
   midAngle: number;
@@ -98,6 +99,9 @@ export function renderPie(options: PieRenderOptions): PieRenderResult {
     pathElement.dataset['percent'] = String(percent.toFixed(1));
     pathElement.dataset['name'] = s.name;
 
+    // Get ID from first data point
+    const id = s.data[0]?.id;
+
     slices.push({
       path: pathElement,
       seriesIndex: i,
@@ -109,6 +113,7 @@ export function renderPie(options: PieRenderOptions): PieRenderResult {
       endAngle,
       midAngle,
       ...(s.unit && { unit: s.unit }),
+      ...(id && { id }),
       ...(breakdown && { breakdown }),
     });
 

@@ -1,6 +1,14 @@
 import { createRect, createLine, setAttributes } from '../render/svg';
 import type { TooltipElement } from '../render/tooltip';
-import type { ComputedPoint, ResolvedPadding, SeriesConfig, TooltipData, PieStyle } from '../types';
+import type {
+  ChartClickEventDetail,
+  ChartClickPoint,
+  ComputedPoint,
+  ResolvedPadding,
+  SeriesConfig,
+  TooltipData,
+  PieStyle,
+} from '../types';
 import { getPointHoverRadius, getPointRadius } from '../render/line';
 import { getSliceTransform, type PieSlice } from '../render/pie';
 
@@ -142,14 +150,78 @@ export function setupHover(options: HoverOptions): HoverState {
     currentIndex = -1;
   };
 
+  const handleClick = (e: MouseEvent): void => {
+    const rect = svg.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+
+    // Find nearest x position
+    let nearestIndex = 0;
+    let nearestDist = Infinity;
+
+    for (let i = 0; i < xPositions.length; i++) {
+      const pos = xPositions[i];
+      if (pos === undefined) continue;
+      const dist = Math.abs(pos - mouseX);
+      if (dist < nearestDist) {
+        nearestDist = dist;
+        nearestIndex = i;
+      }
+    }
+
+    const x = xPositions[nearestIndex];
+    if (x === undefined) return;
+
+    // Build click data with all points at this x position
+    let xLabel = '';
+    const points: ChartClickPoint[] = [];
+
+    for (let i = 0; i < series.length; i++) {
+      const s = series[i];
+      const seriesPoints = pointsBySeries[i];
+      if (!s || !seriesPoints) continue;
+
+      const point = seriesPoints.find((p) => Math.abs(p.x - x) < 1);
+      if (point) {
+        if (!xLabel) xLabel = point.dataX;
+
+        // Find the original data point to get the ID
+        const originalDataPoint = s.data.find((d) => d.x === point.dataX);
+
+        points.push({
+          seriesName: s.name,
+          seriesIndex: i,
+          value: point.dataY,
+          color: s.color,
+          ...(originalDataPoint?.id && { id: originalDataPoint.id }),
+          ...(s.unit && { unit: s.unit }),
+        });
+      }
+    }
+
+    if (xLabel && points.length > 0) {
+      // Determine chart type from first series
+      const chartType = series[0]?.type === 'bar' ? 'bar' : 'line';
+
+      const detail: ChartClickEventDetail = {
+        type: chartType,
+        x: xLabel,
+        points,
+      };
+
+      document.dispatchEvent(new CustomEvent('swp-chart-click', { detail }));
+    }
+  };
+
   hoverArea.addEventListener('mousemove', handleMouseMove);
   hoverArea.addEventListener('mouseleave', handleMouseLeave);
+  hoverArea.addEventListener('click', handleClick);
 
   svg.appendChild(hoverArea);
 
   const destroy = (): void => {
     hoverArea.removeEventListener('mousemove', handleMouseMove);
     hoverArea.removeEventListener('mouseleave', handleMouseLeave);
+    hoverArea.removeEventListener('click', handleClick);
   };
 
   return {
@@ -353,22 +425,42 @@ export function setupPieHover(options: PieHoverOptions): HoverState {
     currentIndex = -1;
   };
 
+  const handleSliceClick = (slice: PieSlice): void => {
+    const detail: ChartClickEventDetail = {
+      type: 'pie',
+      points: [{
+        seriesName: slice.name,
+        seriesIndex: slice.seriesIndex,
+        value: slice.value,
+        color: slice.color,
+        percent: slice.percent,
+        ...(slice.id && { id: slice.id }),
+        ...(slice.unit && { unit: slice.unit }),
+      }],
+    };
+
+    document.dispatchEvent(new CustomEvent('swp-chart-click', { detail }));
+  };
+
   // Store handlers for cleanup
-  const sliceHandlers: Map<PieSlice, () => void> = new Map();
+  const sliceHandlers: Map<PieSlice, { enter: () => void; click: () => void }> = new Map();
 
   // Add event listeners to each slice
   slices.forEach((slice) => {
-    const handler = (): void => handleSliceEnter(slice);
-    sliceHandlers.set(slice, handler);
-    slice.path.addEventListener('mouseenter', handler);
+    const enterHandler = (): void => handleSliceEnter(slice);
+    const clickHandler = (): void => handleSliceClick(slice);
+    sliceHandlers.set(slice, { enter: enterHandler, click: clickHandler });
+    slice.path.addEventListener('mouseenter', enterHandler);
     slice.path.addEventListener('mouseleave', handleSliceLeave);
+    slice.path.addEventListener('click', clickHandler);
   });
 
   const destroy = (): void => {
     slices.forEach((slice) => {
-      const handler = sliceHandlers.get(slice);
-      if (handler) {
-        slice.path.removeEventListener('mouseenter', handler);
+      const handlers = sliceHandlers.get(slice);
+      if (handlers) {
+        slice.path.removeEventListener('mouseenter', handlers.enter);
+        slice.path.removeEventListener('click', handlers.click);
       }
       slice.path.removeEventListener('mouseleave', handleSliceLeave);
     });

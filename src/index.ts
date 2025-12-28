@@ -30,4 +30,6 @@ export type {
   LegendConfig,
   AnimationConfig,
   AnnotationConfig,
+  ChartClickEventDetail,
+  ChartClickPoint,
 } from './types';

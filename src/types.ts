@@ -60,6 +60,7 @@ export interface SeriesConfig {
 export interface DataPoint {
   x: string;
   y: number;
+  id?: string;  // Optional ID for click events
 }
 
 export interface LineStyle {
@@ -203,4 +204,24 @@ export interface ResolvedPadding {
 
 export interface ResolvedSeriesConfig extends SeriesConfig {
   computedPoints: ComputedPoint[];
+}
+
+// ============================================================================
+// Click Event Types
+// ============================================================================
+
+export interface ChartClickEventDetail {
+  type: 'pie' | 'bar' | 'line';
+  x?: string;  // x-category (not for pie)
+  points: ChartClickPoint[];
+}
+
+export interface ChartClickPoint {
+  id?: string;
+  seriesName: string;
+  seriesIndex: number;
+  value: number;
+  color: string;
+  unit?: string;
+  percent?: number;  // Only for pie
 }

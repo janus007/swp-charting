@@ -42,58 +42,117 @@
       width: 100%;
       max-width: 1000px;
     }
+    .page-layout {
+      display: flex;
+      gap: 30px;
+    }
+    .charts-column {
+      flex: 1;
+      min-width: 0;
+    }
+    .event-log-column {
+      width: 380px;
+      flex-shrink: 0;
+      position: sticky;
+      top: 20px;
+      align-self: flex-start;
+    }
+    .event-log {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 20px;
+      border-radius: 8px;
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 12px;
+      max-height: calc(100vh - 40px);
+      overflow-y: auto;
+    }
+    .event-log h3 {
+      color: #fff;
+      margin: 0 0 15px 0;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .event-log-entry {
+      background: #2d2d2d;
+      border-radius: 4px;
+      padding: 12px;
+      margin-bottom: 10px;
+      border-left: 3px solid #6a9955;
+    }
+    .event-log-entry:last-child {
+      margin-bottom: 0;
+    }
+    .event-log-type {
+      color: #569cd6;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+    .event-log-empty {
+      color: #666;
+      font-style: italic;
+    }
+    .event-log pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-all;
+      line-height: 1.4;
+      font-size: 11px;
+    }
   </style>
 </head>
 <body>
   <h1>SWP Charting Library</h1>
   <p>Minimalistisk TypeScript charting library med SVG rendering</p>
 
-  <div class="chart-container">
-    <h2>Smooth kurver med gradient (default)</h2>
-    <div id="chart1"></div>
-  </div>
+  <div class="page-layout">
+    <div class="charts-column">
+      <div class="chart-container">
+        <h2>Smooth kurver med gradient (default)</h2>
+        <div id="chart1"></div>
+      </div>
 
-  <div class="chart-container">
-    <h2>Lineære kurver med små punkter</h2>
-    <div id="chart2"></div>
-  </div>
+      <div class="chart-container">
+        <h2>Lineære kurver med små punkter</h2>
+        <div id="chart2"></div>
+      </div>
 
-  <div class="chart-container">
-    <h2>Sparse data - forskellige måneder</h2>
-    <div id="chart3"></div>
-  </div>
+      <div class="chart-container">
+        <h2>Sparse data - forskellige måneder</h2>
+        <div id="chart3"></div>
+      </div>
 
-  <div class="chart-container">
-    <h2>Søjlediagram - alle konfigurationsmuligheder</h2>
-    <div id="chart4"></div>
-  </div>
+      <div class="chart-container">
+        <h2>Søjlediagram - alle konfigurationsmuligheder</h2>
+        <div id="chart4"></div>
+      </div>
 
-  <div class="chart-container">
-    <h2>Grupperede søjler - standard indstillinger</h2>
-    <div id="chart5"></div>
-  </div>
+      <div class="chart-container">
+        <h2>Grupperede søjler - standard indstillinger</h2>
+        <div id="chart5"></div>
+      </div>
 
-  <div class="chart-container">
-    <h2>Pie Chart</h2>
-    <div id="chart6"></div>
-  </div>
+      <div class="chart-container">
+        <h2>Pie Chart</h2>
+        <div id="chart6"></div>
+      </div>
 
-  <div class="chart-container">
-    <h2>Donut Chart (legend til højre)</h2>
-    <div id="chart7"></div>
-  </div>
+      <div class="chart-container">
+        <h2>Donut Chart (legend til højre)</h2>
+        <div id="chart7"></div>
+      </div>
 
-  <div class="chart-container">
-    <h2>Pie Chart med breakdown (hover for detaljer)</h2>
-    <div id="chart8"></div>
-  </div>
+      <div class="chart-container">
+        <h2>Pie Chart med breakdown (hover for detaljer)</h2>
+        <div id="chart8"></div>
+      </div>
 
-  <div class="chart-container">
-    <h2>Revenue/Utilization/Budget Combo Chart (Frisør Demo)</h2>
-    <div id="chart9"></div>
-  </div>
+      <div class="chart-container">
+        <h2>Revenue/Utilization/Budget Combo Chart (Frisør Demo)</h2>
+        <div id="chart9"></div>
+      </div>
 
-  <div class="chart-container" style="max-width: 900px">
+      <div class="chart-container" style="max-width: 900px">
     <h2>Komplet Konfigurationsreference</h2>
     <pre style="background: #1e1e1e; color: #d4d4d4; padding: 20px; border-radius: 6px; overflow-x: auto; font-size: 13px; line-height: 1.5;"><code><span style="color:#6a9955">// createChart(container, options)</span>
 
@@ -191,7 +250,18 @@
 chart.<span style="color:#dcdcaa">update</span>({ series: [...] });  <span style="color:#6a9955">// Opdater chart</span>
 chart.<span style="color:#dcdcaa">resize</span>();                   <span style="color:#6a9955">// Gentegn ved resize</span>
 chart.<span style="color:#dcdcaa">destroy</span>();                  <span style="color:#6a9955">// Fjern og ryd op</span></code></pre>
-  </div>
+      </div>
+    </div><!-- end charts-column -->
+
+    <div class="event-log-column">
+      <div class="event-log">
+        <h3>Click Events</h3>
+        <div id="event-log-content">
+          <div class="event-log-empty">Klik på et chart element for at se events...</div>
+        </div>
+      </div>
+    </div>
+  </div><!-- end page-layout -->
 
   <script type="module">
     import { createChart, createRevenueUtilizationBudgetChart } from '../dist/swp-charting.js';
@@ -208,24 +278,24 @@ chart.<span style="color:#dcdcaa">destroy</span>();                  <span style
           name: 'Services',
           color: '#8b5cf6',
           data: [
-            { x: 'Mar', y: 350 },
-            { x: 'Apr', y: 400 },
-            { x: 'Jun', y: 850 },
-            { x: 'Aug', y: 350 },
-            { x: 'Okt', y: 920 },
-            { x: 'Dec', y: 380 },
+            { x: 'Mar', y: 350, id: 'srv-mar' },
+            { x: 'Apr', y: 400, id: 'srv-apr' },
+            { x: 'Jun', y: 850, id: 'srv-jun' },
+            { x: 'Aug', y: 350, id: 'srv-aug' },
+            { x: 'Okt', y: 920, id: 'srv-okt' },
+            { x: 'Dec', y: 380, id: 'srv-dec' },
           ],
         },
         {
           name: 'Produkter',
           color: '#f59e0b',
           data: [
-            { x: 'Mar', y: 30 },
-            { x: 'Apr', y: 180 },
-            { x: 'Jun', y: 150 },
-            { x: 'Aug', y: 250 },
-            { x: 'Okt', y: 200 },
-            { x: 'Dec', y: 120 },
+            { x: 'Mar', y: 30, id: 'prd-mar' },
+            { x: 'Apr', y: 180, id: 'prd-apr' },
+            { x: 'Jun', y: 150, id: 'prd-jun' },
+            { x: 'Aug', y: 250, id: 'prd-aug' },
+            { x: 'Okt', y: 200, id: 'prd-okt' },
+            { x: 'Dec', y: 120, id: 'prd-dec' },
           ],
         },
       ],
@@ -300,10 +370,10 @@ chart.<span style="color:#dcdcaa">destroy</span>();                  <span style
           color: '#8b5cf6',
           type: 'bar',           // 'bar' | 'line' (default: 'line')
           data: [
-            { x: 'Q1', y: 420 },
-            { x: 'Q2', y: 580 },
-            { x: 'Q3', y: 350 },
-            { x: 'Q4', y: 720 },
+            { x: 'Q1', y: 420, id: 'revenue-q1-2024' },
+            { x: 'Q2', y: 580, id: 'revenue-q2-2024' },
+            { x: 'Q3', y: 350, id: 'revenue-q3-2024' },
+            { x: 'Q4', y: 720, id: 'revenue-q4-2024' },
           ],
           bar: {
             width: 30,           // number | 'auto' (default: 20) - bredde i px
@@ -328,10 +398,10 @@ chart.<span style="color:#dcdcaa">destroy</span>();                  <span style
           color: '#3b82f6',
           type: 'bar',
           data: [
-            { x: 'Q1', y: 320 },
-            { x: 'Q2', y: 450 },
-            { x: 'Q3', y: 280 },
-            { x: 'Q4', y: 520 },
+            { x: 'Q1', y: 320, id: 'sales-2023-q1' },
+            { x: 'Q2', y: 450, id: 'sales-2023-q2' },
+            { x: 'Q3', y: 280, id: 'sales-2023-q3' },
+            { x: 'Q4', y: 520, id: 'sales-2023-q4' },
           ],
         },
         {
@@ -339,10 +409,10 @@ chart.<span style="color:#dcdcaa">destroy</span>();                  <span style
           color: '#10b981',
           type: 'bar',
           data: [
-            { x: 'Q1', y: 420 },
-            { x: 'Q2', y: 580 },
-            { x: 'Q3', y: 350 },
-            { x: 'Q4', y: 720 },
+            { x: 'Q1', y: 420, id: 'sales-2024-q1' },
+            { x: 'Q2', y: 580, id: 'sales-2024-q2' },
+            { x: 'Q3', y: 350, id: 'sales-2024-q3' },
+            { x: 'Q4', y: 720, id: 'sales-2024-q4' },
           ],
         },
       ],
@@ -357,10 +427,10 @@ chart.<span style="color:#dcdcaa">destroy</span>();                  <span style
       width: 400,
       height: 300,
       series: [
-        { name: 'Produkter', color: '#8b5cf6', type: 'pie', data: [{ x: '', y: 350 }] },
-        { name: 'Services', color: '#3b82f6', type: 'pie', data: [{ x: '', y: 280 }] },
-        { name: 'Licenser', color: '#10b981', type: 'pie', data: [{ x: '', y: 180 }] },
-        { name: 'Support', color: '#f59e0b', type: 'pie', data: [{ x: '', y: 120 }] },
+        { name: 'Produkter', color: '#8b5cf6', type: 'pie', data: [{ x: '', y: 350, id: 'cat-products' }] },
+        { name: 'Services', color: '#3b82f6', type: 'pie', data: [{ x: '', y: 280, id: 'cat-services' }] },
+        { name: 'Licenser', color: '#10b981', type: 'pie', data: [{ x: '', y: 180, id: 'cat-licenses' }] },
+        { name: 'Support', color: '#f59e0b', type: 'pie', data: [{ x: '', y: 120, id: 'cat-support' }] },
       ],
       legend: true,
     });
@@ -579,6 +649,40 @@ chart.<span style="color:#dcdcaa">destroy</span>();                  <span style
     // chart.resize();                   // Gentegn chart (ved resize)
     // chart.destroy();                  // Fjern chart og ryd op
     //
+
+    // =========================================================================
+    // CLICK EVENT LISTENER
+    // =========================================================================
+    const eventLogContent = document.getElementById('event-log-content');
+    let eventCount = 0;
+
+    document.addEventListener('swp-chart-click', (e) => {
+      const detail = e.detail;
+      eventCount++;
+
+      // Log til console
+      console.log('swp-chart-click:', detail);
+
+      // Tilføj event til log (nyeste først)
+      const entry = document.createElement('div');
+      entry.className = 'event-log-entry';
+      entry.innerHTML = `
+        <div class="event-log-type">#${eventCount} ${detail.type}${detail.x ? ` @ "${detail.x}"` : ''}</div>
+        <pre>${JSON.stringify(detail, null, 2)}</pre>
+      `;
+
+      // Fjern "empty" besked hvis den findes
+      const emptyMsg = eventLogContent.querySelector('.event-log-empty');
+      if (emptyMsg) emptyMsg.remove();
+
+      // Indsæt øverst
+      eventLogContent.insertBefore(entry, eventLogContent.firstChild);
+
+      // Behold kun de 10 seneste
+      while (eventLogContent.children.length > 10) {
+        eventLogContent.removeChild(eventLogContent.lastChild);
+      }
+    });
   </script>
 </body>
 </html>
