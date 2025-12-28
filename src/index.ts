@@ -1,6 +1,13 @@
 // Main API
 export { createChart } from './chart';
 
+// Presets
+export {
+  createRevenueUtilizationBudgetChart,
+  type RevenueUtilizationData,
+  type RevenueUtilizationBudgetOptions,
+} from './presets/revenueUtilizationBudget';
+
 // Types
 export type {
   Chart,
@@ -22,4 +29,5 @@ export type {
   TooltipAnimation,
   LegendConfig,
   AnimationConfig,
+  AnnotationConfig,
 } from './types';

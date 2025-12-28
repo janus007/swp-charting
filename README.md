@@ -361,12 +361,89 @@ Syg
   Peter: 10 t
 ```
 
+### Dual Y-Axis
+
+```typescript
+createChart(el, {
+  xAxis: { categories: ['Jan', 'Feb', 'Mar'] },
+  yAxis: [
+    { min: 0, max: 100000, format: (v) => `${v/1000}k` },  // Left axis
+    { min: 0, max: 100, format: (v) => `${v}%` },          // Right axis
+  ],
+  series: [
+    { name: 'Revenue', color: '#3b82f6', type: 'bar', yAxisIndex: 0, data: [...] },
+    { name: 'Utilization', color: '#10b981', type: 'line', yAxisIndex: 1, data: [...] },
+  ],
+});
+```
+
+### Dashed Lines
+
+```typescript
+{
+  name: 'Forecast',
+  color: '#10b981',
+  type: 'line',
+  line: { dashArray: '5,5' },  // Creates dashed line
+  data: [...]
+}
+```
+
+### Annotations (Vertical Lines)
+
+```typescript
+createChart(el, {
+  // ... series and axes
+  annotations: [
+    {
+      type: 'verticalLine',
+      x: 'Mar',              // Category name or index
+      color: '#666',
+      label: 'Nu',
+      labelPosition: 'top',  // 'top' | 'bottom'
+    }
+  ],
+});
+```
+
+### Revenue/Utilization/Budget Combo Chart
+
+Pre-built combo chart for business metrics:
+
+```typescript
+import { createChart, createRevenueUtilizationBudgetChart } from '@sevenweirdpeople/swp-charting';
+
+const data = [
+  { time: 'Uge 48', index: -2, revenue: 45000, budget: 50000, utilization: 0.75, isForecast: false },
+  { time: 'Uge 49', index: -1, revenue: 52000, budget: 50000, utilization: 0.82, isForecast: false },
+  { time: 'Uge 50', index: 0, revenue: 55000, budget: 52000, utilization: 0.85, isForecast: false },
+  { time: 'Uge 51', index: 1, revenue: 60000, budget: 55000, utilization: 0.90, isForecast: true },
+  { time: 'Uge 52', index: 2, revenue: 58000, budget: 55000, utilization: 0.88, isForecast: true },
+];
+
+const options = createRevenueUtilizationBudgetChart(data, {
+  width: 700,
+  height: 400,
+  showLegend: true,
+  nowLabel: 'Nu',
+});
+
+createChart(document.getElementById('chart'), options);
+```
+
+Features:
+- Revenue as bars (left Y-axis, DKK)
+- Utilization as line (right Y-axis, 0-100%)
+- Budget as line (left Y-axis, DKK)
+- Solid lines/bars for actual, dashed/transparent for forecast
+- Vertical "Now" line at index = 0
+
 ## Bundle Size
 
 | Format | Size |
 |--------|------|
-| Uncompressed | 37.5 KB |
-| Gzipped | **8.8 KB** |
+| Uncompressed | 47 KB |
+| Gzipped | **11 KB** |
 
 ## Browser Support
 

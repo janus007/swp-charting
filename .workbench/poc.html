@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+<meta charset="UTF-8" />
+<title>Omsætning, Belægningsgrad & Budget</title>
+<style>
+  body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #f3f4f6;
+    margin: 0;
+    padding: 40px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .chart-container {
+    background: #ffffff;
+    padding: 22px 28px 38px;
+    width: 960px;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+    position: relative;
+  }
+
+  svg {
+    width: 100%;
+  }
+
+  .axis {
+    stroke: #d1d5db;
+    stroke-width: 1;
+  }
+
+  .grid {
+    stroke: #e5e7eb;
+    stroke-width: 1;
+    stroke-dasharray: 2 3;
+  }
+
+  text {
+    font-size: 11px;
+    fill: #4b5563;
+  }
+
+  .bar.past {
+    fill: #3b82f6;
+  }
+
+  .bar.future {
+    fill: #3b82f6;
+    opacity: 0.35;
+  }
+
+  .line.past {
+    stroke: #10b981;
+    stroke-width: 2.5;
+    fill: none;
+  }
+
+  .line.future {
+    stroke: #10b981;
+    stroke-width: 2.5;
+    fill: none;
+    stroke-dasharray: 4 4;
+  }
+
+  .budget-line {
+    stroke: #f59e0b;
+    stroke-width: 2.5;
+    fill: none;
+  }
+
+  .budget-future {
+    stroke: #f59e0b;
+    stroke-width: 2.5;
+    fill: none;
+    stroke-dasharray: 4 4;
+  }
+
+  .now {
+    stroke: #374151;
+    stroke-width: 1.5;
+    stroke-dasharray: 4 4;
+  }
+
+  .legend-container {
+    position: absolute;
+    right: 30px;
+    top: 16px;
+    background: #ffffff;
+    padding: 10px 14px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  .legend-title {
+    font-weight: 600;
+    font-size: 11px;
+    color: #111827;
+    margin-bottom: 4px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+    white-space: nowrap;
+  }
+
+  .legend-box {
+    width: 14px;
+    height: 8px;
+    border-radius: 2px;
+  }
+
+  .legend-line {
+    width: 18px;
+    height: 0;
+    border-top: 3px solid;
+    border-radius: 2px;
+  }
+</style>
+</head>
+<body>
+<div class="chart-container">
+
+  <!-- LEGEND (6 serier) -->
+  <div class="legend-container">
+    <div class="legend-title">Serier</div>
+    <div class="legend-item">
+      <div class="legend-box" style="background:#3b82f6;"></div>
+      Omsætning – Realiseret
+    </div>
+    <div class="legend-item">
+      <div class="legend-box" style="background:#3b82f6;opacity:.35;"></div>
+      Omsætning – Forecast
+    </div>
+    <div class="legend-item">
+      <div class="legend-line" style="border-color:#10b981;"></div>
+      Belægningsgrad – Realiseret
+    </div>
+    <div class="legend-item">
+      <div class="legend-line" style="border-color:#10b981;border-style:dashed;"></div>
+      Belægningsgrad – Forecast
+    </div>
+    <div class="legend-item">
+      <div class="legend-line" style="border-color:#f59e0b;"></div>
+      Budget Omsætning – Realiseret
+    </div>
+    <div class="legend-item">
+      <div class="legend-line" style="border-color:#f59e0b;border-style:dashed;"></div>
+      Budget Omsætning – Forecast
+    </div>
+  </div>
+
+  <div style="font-size:18px;font-weight:600;margin-bottom:4px;">
+    Omsætning, Belægningsgrad & Budget
+  </div>
+  <div style="font-size:13px;color:#6b7280;margin-bottom:12px;">
+    Realiseret vs. forecast, inkl. budgetlinje
+  </div>
+
+  <svg viewBox="0 0 1000 400">
+
+    <!-- Axes -->
+    <line x1="60" y1="40" x2="60" y2="340" class="axis" />
+    <line x1="60" y1="340" x2="960" y2="340" class="axis" />
+
+    <!-- Grid -->
+    <line x1="60" y1="340" x2="960" y2="340" class="grid" />
+    <line x1="60" y1="240" x2="960" y2="240" class="grid" />
+    <line x1="60" y1="140" x2="960" y2="140" class="grid" />
+    <line x1="60" y1="40"  x2="960" y2="40"  class="grid" />
+
+    <!-- Y labels -->
+    <text x="55" y="344" text-anchor="end">0 kr</text>
+    <text x="55" y="244" text-anchor="end">500.000 kr</text>
+    <text x="55" y="144" text-anchor="end">1.000.000 kr</text>
+    <text x="55" y="44"  text-anchor="end">1.500.000 kr</text>
+
+    <text x="965" y="344">0%</text>
+    <text x="965" y="244">50%</text>
+    <text x="965" y="144">100%</text>
+
+    <!-- NU-markør -->
+    <line x1="510" y1="40" x2="510" y2="340" class="now" />
+    <text x="510" y="360" text-anchor="middle">Nu</text>
+
+    <!-- REVENUE BARS -->
+    <g>
+      <!-- Past -->
+      <rect class="bar past"   x="68"  y="240" width="20" height="100"/>
+      <rect class="bar past"   x="106" y="227" width="20" height="113"/>
+      <rect class="bar past"   x="143" y="232" width="20" height="108"/>
+      <rect class="bar past"   x="181" y="220" width="20" height="120"/>
+      <rect class="bar past"   x="218" y="207" width="20" height="133"/>
+      <rect class="bar past"   x="256" y="212" width="20" height="128"/>
+      <rect class="bar past"   x="293" y="205" width="20" height="135"/>
+      <rect class="bar past"   x="331" y="214" width="20" height="126"/>
+      <rect class="bar past"   x="368" y="198" width="20" height="142"/>
+      <rect class="bar past"   x="406" y="184" width="20" height="156"/>
+      <rect class="bar past"   x="443" y="190" width="20" height="150"/>
+      <rect class="bar past"   x="481" y="178" width="20" height="162"/>
+
+      <!-- Future -->
+      <rect class="bar future" x="518" y="170" width="20" height="170"/>
+      <rect class="bar future" x="556" y="165" width="20" height="175"/>
+      <rect class="bar future" x="593" y="158" width="20" height="182"/>
+      <rect class="bar future" x="631" y="152" width="20" height="188"/>
+      <rect class="bar future" x="668" y="146" width="20" height="194"/>
+      <rect class="bar future" x="706" y="140" width="20" height="200"/>
+      <rect class="bar future" x="743" y="146" width="20" height="194"/>
+      <rect class="bar future" x="781" y="152" width="20" height="188"/>
+      <rect class="bar future" x="818" y="158" width="20" height="182"/>
+      <rect class="bar future" x="856" y="165" width="20" height="175"/>
+      <rect class="bar future" x="893" y="170" width="20" height="170"/>
+      <rect class="bar future" x="931" y="178" width="20" height="162"/>
+    </g>
+
+    <!-- UTILIZATION LINES -->
+    <polyline class="line past"
+      points="
+        78,180 116,170 153,175 191,160
+        228,150 266,145 303,138 341,142
+        378,136 416,128 453,132 491,125
+      "/>
+    <polyline class="line future"
+      points="
+        491,125 528,122 566,118 603,114
+        641,114 678,110 716,106 753,106
+        791,102 828,102 866,98 903,98 941,95
+      "/>
+
+    <!-- BUDGET LINES -->
+    <polyline class="budget-line"
+      points="
+        78,150 116,142 153,148 191,133
+        228,122 266,118 303,108 341,116
+        378,108 416,100 453,105 491,97
+      "/>
+    <polyline class="budget-future"
+      points="
+        491,97 528,94 566,90 603,86
+        641,86 678,82 716,78 753,78
+        791,74 828,74 866,70 903,70 941,66
+      "/>
+
+  </svg>
+</div>
+</body>
+</html>

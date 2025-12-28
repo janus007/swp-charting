@@ -1,0 +1,37 @@
+{
+  "meta": {
+    "employee": "Frisør - Eksempel",
+    "hoursPerWeek": 37,
+    "period": "12 weeks back + 12 weeks forward",
+    "currency": "DKK"
+  },
+  "data": [
+    { "week": -12, "revenue": 650000, "budget": 900000, "util": 0.80, "forecast": false },
+    { "week": -11, "revenue": 680000, "budget": 900000, "util": 0.82, "forecast": false },
+    { "week": -10, "revenue": 670000, "budget": 900000, "util": 0.85, "forecast": false },
+    { "week": -9,  "revenue": 710000, "budget": 930000, "util": 0.87, "forecast": false },
+    { "week": -8,  "revenue": 740000, "budget": 950000, "util": 0.89, "forecast": false },
+    { "week": -7,  "revenue": 730000, "budget": 950000, "util": 0.91, "forecast": false },
+    { "week": -6,  "revenue": 750000, "budget": 950000, "util": 0.93, "forecast": false },
+    { "week": -5,  "revenue": 730000, "budget": 950000, "util": 0.92, "forecast": false },
+    { "week": -4,  "revenue": 780000, "budget": 975000, "util": 0.94, "forecast": false },
+    { "week": -3,  "revenue": 820000, "budget":1000000, "util": 0.95, "forecast": false },
+    { "week": -2,  "revenue": 800000, "budget":1000000, "util": 0.96, "forecast": false },
+    { "week": -1,  "revenue": 840000, "budget":1025000, "util": 0.97, "forecast": false },
+
+    { "week": 0,   "revenue": 860000, "budget":1025000, "util": 0.97, "forecast": false },
+
+    { "week": 1,   "revenue": 875000, "budget":1050000, "util": 0.96, "forecast": true },
+    { "week": 2,   "revenue": 910000, "budget":1050000, "util": 0.95, "forecast": true },
+    { "week": 3,   "revenue": 940000, "budget":1050000, "util": 0.94, "forecast": true },
+    { "week": 4,   "revenue": 970000, "budget":1050000, "util": 0.93, "forecast": true },
+    { "week": 5,   "revenue":1000000, "budget":1075000, "util": 0.92, "forecast": true },
+    { "week": 6,   "revenue": 970000, "budget":1050000, "util": 0.91, "forecast": true },
+    { "week": 7,   "revenue": 940000, "budget":1025000, "util": 0.90, "forecast": true },
+    { "week": 8,   "revenue": 910000, "budget":1000000, "util": 0.89, "forecast": true },
+    { "week": 9,   "revenue": 875000, "budget": 975000, "util": 0.88, "forecast": true },
+    { "week":10,   "revenue": 860000, "budget": 950000, "util": 0.87, "forecast": true },
+    { "week":11,   "revenue": 840000, "budget": 950000, "util": 0.86, "forecast": true },
+    { "week":12,   "revenue": 820000, "budget": 950000, "util": 0.85, "forecast": true }
+  ]
+}

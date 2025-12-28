@@ -7,7 +7,7 @@ export interface BarRenderOptions {
   padding: ResolvedPadding;
   chartHeight: number;
   seriesIndex: number;
-  seriesCount: number;
+  barSeriesAtX: Map<string, number[]>;
   bandwidth: number;
 }
 
@@ -23,7 +23,7 @@ export function renderBar(options: BarRenderOptions): BarRenderResult {
     padding,
     chartHeight,
     seriesIndex,
-    seriesCount,
+    barSeriesAtX,
     bandwidth,
   } = options;
 
@@ -37,16 +37,8 @@ export function renderBar(options: BarRenderOptions): BarRenderResult {
   // Calculate bar dimensions
   const defaultBarWidth = 20;
   const barWidth = barStyle?.width === 'auto'
-    ? (bandwidth * 0.8) / seriesCount
+    ? (bandwidth * 0.8)
     : barStyle?.width ?? defaultBarWidth;
-
-  const gap = seriesCount > 1 ? 4 : 0; // Small gap between grouped bars
-  const actualBarWidth = barWidth;
-  const groupWidth = (barWidth + gap) * seriesCount - gap;
-
-  // Calculate offset for grouped bars
-  const groupOffset = -groupWidth / 2;
-  const barOffset = groupOffset + seriesIndex * (barWidth + gap);
 
   const radius = barStyle?.radius ?? 0;
   const opacity = barStyle?.opacity ?? 1;
@@ -73,13 +65,24 @@ export function renderBar(options: BarRenderOptions): BarRenderResult {
     const barHeight = baseline - point.y;
     if (barHeight <= 0) continue;
 
+    // Find how many bar series have data at this x-point
+    const seriesAtThisX = barSeriesAtX.get(point.dataX) ?? [seriesIndex];
+    const countAtX = seriesAtThisX.length;
+    const indexAtX = seriesAtThisX.indexOf(seriesIndex);
+
+    // Calculate offset based on series count at this specific x-point
+    const gap = countAtX > 1 ? 4 : 0;
+    const groupWidth = (barWidth + gap) * countAtX - gap;
+    const groupOffset = -groupWidth / 2;
+    const barOffset = groupOffset + indexAtX * (barWidth + gap);
+
     const x = point.x + barOffset;
     const y = point.y;
 
     const rect = createSvgElement('rect', {
       x,
       y,
-      width: actualBarWidth,
+      width: barWidth,
       height: barHeight,
       rx: radius,
       ry: radius,

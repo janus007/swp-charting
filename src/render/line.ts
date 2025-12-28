@@ -73,12 +73,14 @@ export function renderLine(options: LineRenderOptions): LineRenderResult {
   // Create line path
   const lineWidth = series.line?.width ?? 2.5;
   const lineOpacity = series.line?.opacity ?? 1;
+  const dashArray = series.line?.dashArray;
 
   const linePath = createPath(linePathD, {
     fill: 'none',
     stroke: series.color,
     'stroke-width': lineWidth,
     'stroke-opacity': lineOpacity,
+    ...(dashArray && { 'stroke-dasharray': dashArray }),
   });
 
   // Create points

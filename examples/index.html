@@ -38,6 +38,10 @@
       width: 100%;
       max-width: 700px;
     }
+    #chart9 {
+      width: 100%;
+      max-width: 1000px;
+    }
   </style>
 </head>
 <body>
@@ -82,6 +86,11 @@
   <div class="chart-container">
     <h2>Pie Chart med breakdown (hover for detaljer)</h2>
     <div id="chart8"></div>
+  </div>
+
+  <div class="chart-container">
+    <h2>Revenue/Utilization/Budget Combo Chart (Frisør Demo)</h2>
+    <div id="chart9"></div>
   </div>
 
   <div class="chart-container" style="max-width: 900px">
@@ -185,7 +194,7 @@ chart.<span style="color:#dcdcaa">destroy</span>();                  <span style
   </div>
 
   <script type="module">
-    import { createChart } from '../dist/swp-charting.js';
+    import { createChart, createRevenueUtilizationBudgetChart } from '../dist/swp-charting.js';
 
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Maj', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dec'];
 
@@ -407,6 +416,53 @@ chart.<span style="color:#dcdcaa">destroy</span>();                  <span style
       ],
       legend: true,
     });
+
+    // Chart 9: Revenue/Utilization/Budget Combo Chart (18 uger bagud + 12 uger frem)
+    const frisørData = [
+      // Historisk data (18 uger bagud)
+      { time: '34', index: -18, revenue: 620000, budget: 850000, utilization: 0.72, isForecast: false },
+      { time: '35', index: -17, revenue: 645000, budget: 850000, utilization: 0.74, isForecast: false },
+      { time: '36', index: -16, revenue: 680000, budget: 875000, utilization: 0.76, isForecast: false },
+      { time: '37', index: -15, revenue: 665000, budget: 875000, utilization: 0.78, isForecast: false },
+      { time: '38', index: -14, revenue: 710000, budget: 900000, utilization: 0.80, isForecast: false },
+      { time: '39', index: -13, revenue: 695000, budget: 900000, utilization: 0.79, isForecast: false },
+      { time: '40', index: -12, revenue: 720000, budget: 900000, utilization: 0.82, isForecast: false },
+      { time: '41', index: -11, revenue: 755000, budget: 925000, utilization: 0.84, isForecast: false },
+      { time: '42', index: -10, revenue: 740000, budget: 925000, utilization: 0.83, isForecast: false },
+      { time: '43', index: -9,  revenue: 780000, budget: 950000, utilization: 0.86, isForecast: false },
+      { time: '44', index: -8,  revenue: 810000, budget: 950000, utilization: 0.88, isForecast: false },
+      { time: '45', index: -7,  revenue: 795000, budget: 950000, utilization: 0.87, isForecast: false },
+      { time: '46', index: -6,  revenue: 830000, budget: 975000, utilization: 0.89, isForecast: false },
+      { time: '47', index: -5,  revenue: 815000, budget: 975000, utilization: 0.88, isForecast: false },
+      { time: '48', index: -4,  revenue: 860000, budget: 1000000, utilization: 0.91, isForecast: false },
+      { time: '49', index: -3,  revenue: 845000, budget: 1000000, utilization: 0.90, isForecast: false },
+      { time: '50', index: -2,  revenue: 890000, budget: 1025000, utilization: 0.92, isForecast: false },
+      { time: '51', index: -1,  revenue: 875000, budget: 1025000, utilization: 0.91, isForecast: false },
+      // Nu
+      { time: '52', index: 0,   revenue: 920000, budget: 1050000, utilization: 0.93, isForecast: false },
+      // Forecast data (12 uger frem)
+      { time: '1',  index: 1,   revenue: 940000, budget: 1050000, utilization: 0.92, isForecast: true },
+      { time: '2',  index: 2,   revenue: 960000, budget: 1075000, utilization: 0.91, isForecast: true },
+      { time: '3',  index: 3,   revenue: 985000, budget: 1075000, utilization: 0.90, isForecast: true },
+      { time: '4',  index: 4,   revenue: 1010000, budget: 1100000, utilization: 0.89, isForecast: true },
+      { time: '5',  index: 5,   revenue: 995000, budget: 1100000, utilization: 0.88, isForecast: true },
+      { time: '6',  index: 6,   revenue: 970000, budget: 1075000, utilization: 0.87, isForecast: true },
+      { time: '7',  index: 7,   revenue: 945000, budget: 1050000, utilization: 0.86, isForecast: true },
+      { time: '8',  index: 8,   revenue: 920000, budget: 1025000, utilization: 0.85, isForecast: true },
+      { time: '9',  index: 9,   revenue: 895000, budget: 1000000, utilization: 0.84, isForecast: true },
+      { time: '10', index: 10,  revenue: 870000, budget: 975000, utilization: 0.83, isForecast: true },
+      { time: '11', index: 11,  revenue: 855000, budget: 975000, utilization: 0.82, isForecast: true },
+      { time: '12', index: 12,  revenue: 840000, budget: 950000, utilization: 0.81, isForecast: true },
+    ];
+
+    const comboChartOptions = createRevenueUtilizationBudgetChart(frisørData, {
+      width: 960,
+      height: 400,
+      showLegend: true,
+      legendPosition: 'top',
+    });
+
+    createChart(document.getElementById('chart9'), comboChartOptions);
 
     // =========================================================================
     // KOMPLET KONFIGURATIONSREFERENCE

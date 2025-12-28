@@ -8,10 +8,11 @@ export interface ChartOptions {
   width?: number;
   height?: number;
   padding?: Padding;
-  yAxis?: YAxisConfig;
+  yAxis?: YAxisConfig | [YAxisConfig, YAxisConfig];  // Single or dual Y-axis
   tooltip?: TooltipConfig | boolean;
   legend?: LegendConfig | boolean;
   animation?: AnimationConfig | boolean;
+  annotations?: AnnotationConfig[];
 }
 
 export interface Padding {
@@ -27,6 +28,7 @@ export interface Padding {
 
 export interface XAxisConfig {
   categories: string[];
+  label?: string;  // Centered label below x-axis (e.g., "Uge", "Month")
 }
 
 export interface YAxisConfig {
@@ -46,6 +48,7 @@ export interface SeriesConfig {
   data: DataPoint[];
   type?: 'line' | 'bar' | 'pie';
   unit?: string;              // Unit suffix for values, e.g. 't', 'kr', '%'
+  yAxisIndex?: 0 | 1;         // 0 = left axis (default), 1 = right axis
   showArea?: boolean;
   line?: LineStyle;
   point?: PointStyle;
@@ -63,6 +66,7 @@ export interface LineStyle {
   width?: number;
   opacity?: number;
   curve?: 'smooth' | 'linear';
+  dashArray?: string;         // Dash pattern, e.g. "5,5" for dashed line
 }
 
 export interface PointStyle {
@@ -151,6 +155,19 @@ export interface AnimationConfig {
   enabled?: boolean;
   duration?: number;
   easing?: string;
+}
+
+// ============================================================================
+// Annotation Configuration
+// ============================================================================
+
+export interface AnnotationConfig {
+  type: 'verticalLine';
+  x: string | number;         // Category name or index
+  color?: string;             // Line color (default: #666)
+  label?: string;             // Label text
+  labelPosition?: 'top' | 'bottom';  // Label position (default: top)
+  dashArray?: string;         // Optional dash pattern
 }
 
 // ============================================================================

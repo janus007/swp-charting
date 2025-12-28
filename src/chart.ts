@@ -4,12 +4,15 @@ import type {
   ComputedPoint,
   ResolvedPadding,
   SeriesConfig,
+  YAxisConfig,
 } from './types';
+import type { LinearScale } from './scales/linear';
 import { createLinearScale } from './scales/linear';
 import { createBandScale } from './scales/band';
 import { createSvgRoot, createDefs } from './render/svg';
 import { renderGrid } from './render/grid';
-import { renderXAxis, renderYAxis } from './render/axes';
+import { renderXAxis, renderYAxis, renderRightYAxis } from './render/axes';
+import { renderAnnotations } from './render/annotations';
 import { renderLine } from './render/line';
 import { renderBar } from './render/bar';
 import { renderPie } from './render/pie';
@@ -72,7 +75,10 @@ export function createChart(
     // Resolve dimensions
     const containerWidth = container.clientWidth;
     const width = currentOptions.width ?? (containerWidth > 0 ? containerWidth : DEFAULT_WIDTH);
-    const height = currentOptions.height ?? DEFAULT_HEIGHT;
+    const baseHeight = currentOptions.height ?? DEFAULT_HEIGHT;
+    // Add extra height for x-axis label if present
+    const xAxisLabelHeight = xAxis?.label ? 18 : 0;
+    const height = baseHeight + xAxisLabelHeight;
 
     // Resolve padding
     const padding: ResolvedPadding = {
@@ -83,7 +89,7 @@ export function createChart(
     };
 
     const chartWidth = width - padding.left - padding.right;
-    const chartHeight = height - padding.top - padding.bottom;
+    const chartHeight = baseHeight - padding.top - padding.bottom;  // Use baseHeight so chart area doesn't expand into label space
 
     // Check if this is a pie chart
     const isPieChart = series.length > 0 && series.every((s) => s.type === 'pie');
@@ -170,22 +176,36 @@ export function createChart(
       return;
     }
 
-    // Count bar series and calculate max bar group width for padding
+    // Count bar series and build map of which series have data at each x
     const barSeries = series.filter((s) => s.type === 'bar');
     const barSeriesCount = barSeries.length;
+
+    // Build map: x-category -> list of bar series indices that have data there
+    const barSeriesAtX: Map<string, number[]> = new Map();
+    for (let i = 0; i < barSeries.length; i++) {
+      const s = barSeries[i];
+      if (!s) continue;
+      for (const point of s.data) {
+        const existing = barSeriesAtX.get(point.x) ?? [];
+        existing.push(i);
+        barSeriesAtX.set(point.x, existing);
+      }
+    }
+
     let outerPadding = 0;
 
     if (barSeriesCount > 0) {
-      // Calculate width needed for bar groups
+      // Calculate width needed for bar groups (use max possible overlap)
       const defaultBarWidth = 20;
-      const barGap = barSeriesCount > 1 ? 4 : 0;
+      const maxOverlap = Math.max(...Array.from(barSeriesAtX.values()).map(arr => arr.length), 1);
+      const barGap = maxOverlap > 1 ? 4 : 0;
       const maxBarWidth = Math.max(
         ...barSeries.map((s) => {
           if (s.bar?.width === 'auto') return defaultBarWidth;
           return s.bar?.width ?? defaultBarWidth;
         })
       );
-      const groupWidth = (maxBarWidth + barGap) * barSeriesCount - barGap;
+      const groupWidth = (maxBarWidth + barGap) * maxOverlap - barGap;
       outerPadding = groupWidth / 2 + 20; // Half group width + margin
     }
 
@@ -200,15 +220,37 @@ export function createChart(
       { paddingOuter: outerPadding }
     );
 
-    // Calculate y domain
-    const yMin = yAxis?.min ?? 0;
-    let yMax = yAxis?.max ?? calculateYMax(series);
+    // Detect dual Y-axis mode
+    const isDualAxis = Array.isArray(yAxis);
+    const leftAxisConfig: YAxisConfig | undefined = isDualAxis ? yAxis[0] : yAxis;
+    const rightAxisConfig: YAxisConfig | undefined = isDualAxis ? yAxis[1] : undefined;
+
+    // Separate series by axis
+    const leftAxisSeries = series.filter((s) => (s.yAxisIndex ?? 0) === 0);
+    const rightAxisSeries = series.filter((s) => s.yAxisIndex === 1);
+
+    // Calculate left Y-axis domain
+    const yMin = leftAxisConfig?.min ?? 0;
+    let yMax = leftAxisConfig?.max ?? calculateYMax(leftAxisSeries);
     if (yMin === yMax) yMax = yMin + 1;
 
     const yScale = createLinearScale(
       [yMin, yMax],
       [padding.top + chartHeight, padding.top]
     );
+
+    // Calculate right Y-axis domain (if dual axis)
+    let yScale2: LinearScale | null = null;
+    if (isDualAxis && rightAxisSeries.length > 0) {
+      const yMin2 = rightAxisConfig?.min ?? 0;
+      let yMax2 = rightAxisConfig?.max ?? calculateYMax(rightAxisSeries);
+      if (yMin2 === yMax2) yMax2 = yMin2 + 1;
+
+      yScale2 = createLinearScale(
+        [yMin2, yMax2],
+        [padding.top + chartHeight, padding.top]
+      );
+    }
 
     // Create SVG
     svg = createSvgRoot(width, height);
@@ -231,22 +273,38 @@ export function createChart(
     });
     gridLines.forEach((line) => svg!.appendChild(line));
 
-    // Render Y axis labels
+    // Render left Y axis labels
     const yAxisOptions: Parameters<typeof renderYAxis>[0] = {
       scale: yScale,
       padding,
     };
-    if (yAxis?.format) {
-      yAxisOptions.format = yAxis.format;
+    if (leftAxisConfig?.format) {
+      yAxisOptions.format = leftAxisConfig.format;
     }
     const yLabels = renderYAxis(yAxisOptions);
     yLabels.forEach((label) => svg!.appendChild(label));
+
+    // Render right Y axis labels (if dual axis)
+    if (yScale2 && rightAxisConfig) {
+      const rightAxisOptions: Parameters<typeof renderRightYAxis>[0] = {
+        scale: yScale2,
+        width,
+        padding,
+      };
+      if (rightAxisConfig.format) {
+        rightAxisOptions.format = rightAxisConfig.format;
+      }
+      const rightYLabels = renderRightYAxis(rightAxisOptions);
+      rightYLabels.forEach((label) => svg!.appendChild(label));
+    }
 
     // Render X axis labels
     const xLabels = renderXAxis({
       scale: xScale,
       height,
       padding,
+      width,
+      ...(xAxis.label && { label: xAxis.label }),
     });
     xLabels.forEach((label) => svg!.appendChild(label));
 
@@ -258,13 +316,16 @@ export function createChart(
       const s = series[i];
       if (!s) continue;
 
+      // Select correct Y scale based on yAxisIndex
+      const seriesYScale = (s.yAxisIndex === 1 && yScale2) ? yScale2 : yScale;
+
       // Compute points
       const computedPoints: ComputedPoint[] = [];
       for (const point of s.data) {
         const x = xScale(point.x);
         if (x === undefined) continue;
 
-        const y = yScale(point.y);
+        const y = seriesYScale(point.y);
         computedPoints.push({
           x,
           y,
@@ -287,7 +348,7 @@ export function createChart(
           padding,
           chartHeight,
           seriesIndex: barSeriesIndex,
-          seriesCount: barSeriesCount,
+          barSeriesAtX,
           bandwidth,
         });
 
@@ -358,6 +419,20 @@ export function createChart(
           animatePoints(result.points, config).start();
         }
       }
+    }
+
+    // Render annotations (if any) - after series so they appear on top
+    const annotationsOption = options.annotations;
+    if (annotationsOption && annotationsOption.length > 0) {
+      const annotationElements = renderAnnotations({
+        annotations: annotationsOption,
+        xScale,
+        height,
+        padding,
+        categories: xAxis.categories,
+      });
+      annotationElements.lines.forEach((line) => svg!.appendChild(line));
+      annotationElements.labels.forEach((label) => svg!.appendChild(label));
     }
 
     // Sort x positions
