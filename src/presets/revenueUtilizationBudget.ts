@@ -76,6 +76,9 @@ export function createRevenueUtilizationBudgetChart(
   const actualData = sortedData.filter((d) => !d.isForecast);
   const forecastData = sortedData.filter((d) => d.isForecast);
 
+  // Get last actual data point for connecting lines
+  const lastActual = actualData[actualData.length - 1];
+
   // Create series
   const series: SeriesConfig[] = [];
 
@@ -124,13 +127,18 @@ export function createRevenueUtilizationBudgetChart(
 
   // 4) Utilization Forecast (line, dashed, right axis)
   if (forecastData.length > 0) {
+    // Include last actual point to connect the lines
+    const utilizationForecastData = lastActual
+      ? [{ x: lastActual.time, y: lastActual.utilization * 100 }, ...forecastData.map((d) => ({ x: d.time, y: d.utilization * 100 }))]
+      : forecastData.map((d) => ({ x: d.time, y: d.utilization * 100 }));
+
     series.push({
       name: 'Belægningsgrad – Forecast',
       color: chartColors.utilization,
       type: 'line',
       unit: '%',
       yAxisIndex: 1,
-      data: forecastData.map((d) => ({ x: d.time, y: d.utilization * 100 })),
+      data: utilizationForecastData,
       line: { width: 2.5, curve: 'linear', dashArray: '4 4' },
       point: { style: 'dot', radius: 0 },
       showArea: false,
@@ -154,13 +162,18 @@ export function createRevenueUtilizationBudgetChart(
 
   // 6) Budget Forecast (line, dashed, left axis)
   if (forecastData.length > 0) {
+    // Include last actual point to connect the lines
+    const budgetForecastData = lastActual
+      ? [{ x: lastActual.time, y: lastActual.budget }, ...forecastData.map((d) => ({ x: d.time, y: d.budget }))]
+      : forecastData.map((d) => ({ x: d.time, y: d.budget }));
+
     series.push({
       name: 'Budget Omsætning – Forecast',
       color: chartColors.budget,
       type: 'line',
       unit: 'kr',
       yAxisIndex: 0,
-      data: forecastData.map((d) => ({ x: d.time, y: d.budget })),
+      data: budgetForecastData,
       line: { width: 2.5, curve: 'linear', dashArray: '4 4' },
       point: { style: 'dot', radius: 0 },
       showArea: false,
