@@ -67,20 +67,21 @@ export function animatePoints(
   const easing = config?.easing ?? 'ease-out';
 
   const start = (): void => {
-    if (!enabled) return;
+    if (!enabled || points.length === 0) return;
 
-    points.forEach((point, index) => {
-      // Start invisible and scaled down
+    // Set initial styles for all points (batch write)
+    points.forEach((point) => {
       point.style.opacity = '0';
       point.style.transform = 'scale(0)';
       point.style.transformOrigin = 'center';
+    });
 
-      // Trigger reflow
-      point.getBoundingClientRect();
+    // Single reflow trigger for all points
+    points[0]?.getBoundingClientRect();
 
-      // Stagger the animation
+    // Set animation styles for all points (batch write)
+    points.forEach((point, index) => {
       const delay = (index / points.length) * (duration * 0.5);
-
       point.style.transition = `opacity ${duration * 0.5}ms ${easing} ${delay}ms, transform ${duration * 0.5}ms ${easing} ${delay}ms`;
       point.style.opacity = '1';
       point.style.transform = 'scale(1)';

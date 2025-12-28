@@ -148,7 +148,7 @@
       </div>
 
       <div class="chart-container">
-        <h2>Revenue/Utilization/Budget Combo Chart (Frisør Demo)</h2>
+        <h2>Combo Chart med Dual Y-akse, Annotations og Region</h2>
         <div id="chart9"></div>
       </div>
 
@@ -264,7 +264,7 @@ chart.<span style="color:#dcdcaa">destroy</span>();                  <span style
   </div><!-- end page-layout -->
 
   <script type="module">
-    import { createChart, createRevenueUtilizationBudgetChart } from '../dist/swp-charting.js';
+    import { createChart } from '../dist/swp-charting.js';
 
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Maj', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dec'];
 
@@ -487,52 +487,137 @@ chart.<span style="color:#dcdcaa">destroy</span>();                  <span style
       legend: true,
     });
 
-    // Chart 9: Revenue/Utilization/Budget Combo Chart (18 uger bagud + 12 uger frem)
-    const frisørData = [
+    // Chart 9: Revenue/Utilization/Budget Combo Chart (generisk API med annotations)
+    const rawData = [
       // Historisk data (18 uger bagud)
-      { time: '34', index: -18, revenue: 620000, budget: 850000, utilization: 0.72, isForecast: false },
-      { time: '35', index: -17, revenue: 645000, budget: 850000, utilization: 0.74, isForecast: false },
-      { time: '36', index: -16, revenue: 680000, budget: 875000, utilization: 0.76, isForecast: false },
-      { time: '37', index: -15, revenue: 665000, budget: 875000, utilization: 0.78, isForecast: false },
-      { time: '38', index: -14, revenue: 710000, budget: 900000, utilization: 0.80, isForecast: false },
-      { time: '39', index: -13, revenue: 695000, budget: 900000, utilization: 0.79, isForecast: false },
-      { time: '40', index: -12, revenue: 720000, budget: 900000, utilization: 0.82, isForecast: false },
-      { time: '41', index: -11, revenue: 755000, budget: 925000, utilization: 0.84, isForecast: false },
-      { time: '42', index: -10, revenue: 740000, budget: 925000, utilization: 0.83, isForecast: false },
-      { time: '43', index: -9,  revenue: 780000, budget: 950000, utilization: 0.86, isForecast: false },
-      { time: '44', index: -8,  revenue: 810000, budget: 950000, utilization: 0.88, isForecast: false },
-      { time: '45', index: -7,  revenue: 795000, budget: 950000, utilization: 0.87, isForecast: false },
-      { time: '46', index: -6,  revenue: 830000, budget: 975000, utilization: 0.89, isForecast: false },
-      { time: '47', index: -5,  revenue: 815000, budget: 975000, utilization: 0.88, isForecast: false },
-      { time: '48', index: -4,  revenue: 860000, budget: 1000000, utilization: 0.91, isForecast: false },
-      { time: '49', index: -3,  revenue: 845000, budget: 1000000, utilization: 0.90, isForecast: false },
-      { time: '50', index: -2,  revenue: 890000, budget: 1025000, utilization: 0.92, isForecast: false },
-      { time: '51', index: -1,  revenue: 875000, budget: 1025000, utilization: 0.91, isForecast: false },
+      { time: '34', revenue: 620000, budget: 850000, utilization: 0.72, isForecast: false },
+      { time: '35', revenue: 645000, budget: 850000, utilization: 0.74, isForecast: false },
+      { time: '36', revenue: 680000, budget: 875000, utilization: 0.76, isForecast: false },
+      { time: '37', revenue: 665000, budget: 875000, utilization: 0.78, isForecast: false },
+      { time: '38', revenue: 710000, budget: 900000, utilization: 0.80, isForecast: false },
+      { time: '39', revenue: 695000, budget: 900000, utilization: 0.79, isForecast: false },
+      { time: '40', revenue: 720000, budget: 900000, utilization: 0.82, isForecast: false },
+      { time: '41', revenue: 755000, budget: 925000, utilization: 0.84, isForecast: false },
+      { time: '42', revenue: 740000, budget: 925000, utilization: 0.83, isForecast: false },
+      { time: '43', revenue: 780000, budget: 950000, utilization: 0.86, isForecast: false },
+      { time: '44', revenue: 810000, budget: 950000, utilization: 0.88, isForecast: false },
+      { time: '45', revenue: 795000, budget: 950000, utilization: 0.87, isForecast: false },
+      { time: '46', revenue: 830000, budget: 975000, utilization: 0.89, isForecast: false },
+      { time: '47', revenue: 815000, budget: 975000, utilization: 0.88, isForecast: false },
+      { time: '48', revenue: 860000, budget: 1000000, utilization: 0.91, isForecast: false },
+      { time: '49', revenue: 845000, budget: 1000000, utilization: 0.90, isForecast: false },
+      { time: '50', revenue: 890000, budget: 1025000, utilization: 0.92, isForecast: false },
+      { time: '51', revenue: 875000, budget: 1025000, utilization: 0.91, isForecast: false },
       // Nu
-      { time: '52', index: 0,   revenue: 920000, budget: 1050000, utilization: 0.93, isForecast: false },
+      { time: '52', revenue: 920000, budget: 1050000, utilization: 0.93, isForecast: false },
       // Forecast data (12 uger frem)
-      { time: '1',  index: 1,   revenue: 940000, budget: 1050000, utilization: 0.92, isForecast: true },
-      { time: '2',  index: 2,   revenue: 960000, budget: 1075000, utilization: 0.91, isForecast: true },
-      { time: '3',  index: 3,   revenue: 985000, budget: 1075000, utilization: 0.85, isForecast: true },
-      { time: '4',  index: 4,   revenue: 1010000, budget: 1100000, utilization: 0.89, isForecast: true },
-      { time: '5',  index: 5,   revenue: 995000, budget: 1100000, utilization: 0.88, isForecast: true },
-      { time: '6',  index: 6,   revenue: 970000, budget: 1075000, utilization: 0.87, isForecast: true },
-      { time: '7',  index: 7,   revenue: 945000, budget: 1050000, utilization: 0.80, isForecast: true },
-      { time: '8',  index: 8,   revenue: 920000, budget: 1025000, utilization: 0.78, isForecast: true },
-      { time: '9',  index: 9,   revenue: 895000, budget: 1000000, utilization: 0.77, isForecast: true },
-      { time: '10', index: 10,  revenue: 870000, budget: 975000, utilization: 0.83, isForecast: true },
-      { time: '11', index: 11,  revenue: 855000, budget: 975000, utilization: 0.80, isForecast: true },
-      { time: '12', index: 12,  revenue: 840000, budget: 950000, utilization: 0.65, isForecast: true },
+      { time: '1',  revenue: 940000, budget: 1050000, utilization: 0.92, isForecast: true },
+      { time: '2',  revenue: 960000, budget: 1075000, utilization: 0.91, isForecast: true },
+      { time: '3',  revenue: 985000, budget: 1075000, utilization: 0.85, isForecast: true },
+      { time: '4',  revenue: 1010000, budget: 1100000, utilization: 0.89, isForecast: true },
+      { time: '5',  revenue: 995000, budget: 1100000, utilization: 0.88, isForecast: true },
+      { time: '6',  revenue: 970000, budget: 1075000, utilization: 0.87, isForecast: true },
+      { time: '7',  revenue: 945000, budget: 1050000, utilization: 0.80, isForecast: true },
+      { time: '8',  revenue: 920000, budget: 1025000, utilization: 0.78, isForecast: true },
+      { time: '9',  revenue: 895000, budget: 1000000, utilization: 0.77, isForecast: true },
+      { time: '10', revenue: 870000, budget: 975000, utilization: 0.83, isForecast: true },
+      { time: '11', revenue: 855000, budget: 975000, utilization: 0.80, isForecast: true },
+      { time: '12', revenue: 840000, budget: 950000, utilization: 0.65, isForecast: true },
     ];
 
-    const comboChartOptions = createRevenueUtilizationBudgetChart(frisørData, {
+    // Split data by forecast status
+    const actualData = rawData.filter(d => !d.isForecast);
+    const forecastData = rawData.filter(d => d.isForecast);
+    const lastActual = actualData[actualData.length - 1];
+    const categories = rawData.map(d => d.time);
+
+    createChart(document.getElementById('chart9'), {
       width: 960,
       height: 400,
-      showLegend: true,
-      legendPosition: 'top',
+      xAxis: { categories, label: 'Uge' },
+      yAxis: [
+        { min: 0, max: 1200000, format: v => `${(v / 1000).toFixed(0)}k` },
+        { min: 0, max: 100, format: v => `${v}%` },
+      ],
+      series: [
+        // Revenue Actual (bars)
+        {
+          name: 'Omsætning',
+          color: '#3b82f6',
+          type: 'bar',
+          yAxisIndex: 0,
+          data: actualData.map(d => ({ x: d.time, y: d.revenue })),
+          bar: { opacity: 1 },
+        },
+        // Revenue Forecast (bars, transparent)
+        {
+          name: 'Omsætning (forecast)',
+          color: '#3b82f6',
+          type: 'bar',
+          yAxisIndex: 0,
+          data: forecastData.map(d => ({ x: d.time, y: d.revenue })),
+          bar: { opacity: 0.35 },
+        },
+        // Budget Actual (line)
+        {
+          name: 'Budget',
+          color: '#f59e0b',
+          type: 'line',
+          yAxisIndex: 0,
+          data: actualData.map(d => ({ x: d.time, y: d.budget })),
+          line: { width: 2.5, curve: 'linear' },
+          point: { radius: 0 },
+          showArea: false,
+        },
+        // Budget Forecast (line, dashed) - includes last actual point for connection
+        {
+          name: 'Budget (forecast)',
+          color: '#f59e0b',
+          type: 'line',
+          yAxisIndex: 0,
+          data: [
+            { x: lastActual.time, y: lastActual.budget },
+            ...forecastData.map(d => ({ x: d.time, y: d.budget }))
+          ],
+          line: { width: 2.5, curve: 'linear', dashArray: '4 4' },
+          point: { radius: 0 },
+          showArea: false,
+        },
+        // Utilization Actual (line, right Y-axis)
+        {
+          name: 'Belægningsgrad',
+          color: '#10b981',
+          type: 'line',
+          yAxisIndex: 1,
+          data: actualData.map(d => ({ x: d.time, y: d.utilization * 100 })),
+          line: { width: 2.5, curve: 'linear' },
+          point: { radius: 0 },
+          showArea: false,
+        },
+        // Utilization Forecast (line, dashed, right Y-axis)
+        {
+          name: 'Belægningsgrad (forecast)',
+          color: '#10b981',
+          type: 'line',
+          yAxisIndex: 1,
+          data: [
+            { x: lastActual.time, y: lastActual.utilization * 100 },
+            ...forecastData.map(d => ({ x: d.time, y: d.utilization * 100 }))
+          ],
+          line: { width: 2.5, curve: 'linear', dashArray: '4 4' },
+          point: { radius: 0 },
+          showArea: false,
+        },
+      ],
+      annotations: [
+        // Forecast region (shaded background)
+        { type: 'region', x: '1', x2: '12', backgroundColor: 'rgba(0,0,0,0.03)' },
+        // "Now" vertical line
+        { type: 'verticalLine', x: '52', color: '#374151', dashArray: '4 4', label: 'Nu' },
+      ],
+      legend: { position: 'top' },
+      padding: { right: 60 },
     });
-
-    createChart(document.getElementById('chart9'), comboChartOptions);
 
     // =========================================================================
     // KOMPLET KONFIGURATIONSREFERENCE

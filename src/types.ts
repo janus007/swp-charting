@@ -163,12 +163,15 @@ export interface AnimationConfig {
 // ============================================================================
 
 export interface AnnotationConfig {
-  type: 'verticalLine';
-  x: string | number;         // Category name or index
-  color?: string;             // Line color (default: #666)
-  label?: string;             // Label text
+  type: 'verticalLine' | 'region';
+  x: string | number;              // Category name or index (start for region)
+  x2?: string | number;            // End category for region
+  color?: string;                  // Line/border color (default: #666)
+  backgroundColor?: string;        // Fill color for region
+  width?: number;                  // Line width (default: 1.5)
+  label?: string;                  // Label text
   labelPosition?: 'top' | 'bottom';  // Label position (default: top)
-  dashArray?: string;         // Optional dash pattern
+  dashArray?: string;              // Optional dash pattern
 }
 
 // ============================================================================

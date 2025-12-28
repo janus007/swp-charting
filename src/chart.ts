@@ -273,6 +273,21 @@ export function createChart(
     });
     gridLines.forEach((line) => svg!.appendChild(line));
 
+    // Render annotation regions (behind chart data)
+    const annotationsOption = options.annotations;
+    let annotationElements: ReturnType<typeof renderAnnotations> | null = null;
+    if (annotationsOption && annotationsOption.length > 0) {
+      annotationElements = renderAnnotations({
+        annotations: annotationsOption,
+        xScale,
+        height,
+        padding,
+        categories: xAxis.categories,
+      });
+      // Regions rendered early so they appear behind chart data
+      annotationElements.regions.forEach((region) => svg!.appendChild(region));
+    }
+
     // Render left Y axis labels
     const yAxisOptions: Parameters<typeof renderYAxis>[0] = {
       scale: yScale,
@@ -421,16 +436,8 @@ export function createChart(
       }
     }
 
-    // Render annotations (if any) - after series so they appear on top
-    const annotationsOption = options.annotations;
-    if (annotationsOption && annotationsOption.length > 0) {
-      const annotationElements = renderAnnotations({
-        annotations: annotationsOption,
-        xScale,
-        height,
-        padding,
-        categories: xAxis.categories,
-      });
+    // Render annotation lines and labels (on top of series)
+    if (annotationElements) {
       annotationElements.lines.forEach((line) => svg!.appendChild(line));
       annotationElements.labels.forEach((label) => svg!.appendChild(label));
     }
@@ -473,10 +480,14 @@ export function createChart(
   // Initial render
   render();
 
-  // Setup resize observer for auto-resize
+  // Setup resize observer for auto-resize with debouncing
   if (!currentOptions.width) {
+    let resizeTimeout: ReturnType<typeof setTimeout> | null = null;
     resizeObserver = new ResizeObserver(() => {
-      render();
+      if (resizeTimeout) clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(() => {
+        render();
+      }, 150);
     });
     resizeObserver.observe(container);
   }

@@ -2,16 +2,18 @@
 
 A lightweight, zero-dependency SVG charting library for TypeScript/JavaScript.
 
-**8.8 KB** gzipped — 8x smaller than Chart.js
+**8.5 KB** gzipped — 8x smaller than Chart.js
 
 ## Features
 
 - **Lightweight** — No dependencies, tiny bundle size
 - **TypeScript** — Full type definitions included
 - **Line, Bar & Pie Charts** — Smooth curves, grouped bars, pie/donut charts
+- **Dual Y-Axis** — Left and right Y-axes with independent scales
+- **Annotations** — Vertical lines and shaded regions
 - **Smooth curves** — Monotone cubic spline (Fritsch-Carlson) prevents overshoot
 - **Responsive** — Auto-resize with ResizeObserver
-- **Interactive** — Hover tooltips with smooth animations
+- **Interactive** — Hover tooltips, click events with data IDs
 - **Customizable** — Line styles, point styles, bar styles, pie styles, legends
 
 ## Installation
@@ -71,7 +73,8 @@ chart.destroy();
 | `xAxis` | `{ categories: string[] }` | required* | X-axis category labels (*not required for pie charts) |
 | `width` | `number` | container width | Chart width in pixels |
 | `height` | `number` | `350` | Chart height in pixels |
-| `yAxis` | `YAxisConfig` | auto | Y-axis configuration |
+| `yAxis` | `YAxisConfig \| YAxisConfig[]` | auto | Y-axis configuration (array for dual axis) |
+| `annotations` | `AnnotationConfig[]` | `[]` | Vertical lines and regions |
 | `tooltip` | `boolean \| TooltipConfig` | `true` | Tooltip settings |
 | `legend` | `boolean \| LegendConfig` | `false` | Legend settings |
 | `animation` | `boolean \| AnimationConfig` | `true` | Load animation |
@@ -83,14 +86,16 @@ chart.destroy();
 {
   name: 'Sales',
   color: '#8b5cf6',
-  data: [{ x: 'Jan', y: 100 }, { x: 'Feb', y: 200 }],
+  data: [{ x: 'Jan', y: 100, id: 'sale-jan' }, { x: 'Feb', y: 200 }],
   type: 'line',           // 'line' | 'bar' | 'pie' (default: 'line')
   unit: 'kr',             // Unit suffix for values in tooltips/legend (optional)
+  yAxisIndex: 0,          // Which Y-axis to use (0 = left, 1 = right)
 
   // Line style (for type: 'line')
   line: {
     width: 2.5,           // Line thickness
     curve: 'smooth',      // 'smooth' | 'linear'
+    dashArray: '4 4',     // Dashed line pattern (optional)
   },
 
   // Point style (for type: 'line')
@@ -129,6 +134,7 @@ chart.destroy();
 ### Y-Axis Configuration
 
 ```typescript
+// Single Y-axis
 {
   yAxis: {
     min: 0,
@@ -136,6 +142,41 @@ chart.destroy();
     ticks: 5,
     format: (v) => v.toLocaleString('da-DK') + ' kr'
   }
+}
+
+// Dual Y-axis
+{
+  yAxis: [
+    { min: 0, max: 100000, format: (v) => `${v/1000}k` },  // Left axis (index 0)
+    { min: 0, max: 100, format: (v) => `${v}%` },          // Right axis (index 1)
+  ]
+}
+```
+
+### Annotation Configuration
+
+```typescript
+{
+  annotations: [
+    // Vertical line
+    {
+      type: 'verticalLine',
+      x: 'Mar',              // Category name or index
+      color: '#666',
+      width: 1.5,            // Line width (default: 1.5)
+      dashArray: '4 4',      // Dashed pattern (optional)
+      label: 'Nu',
+      labelPosition: 'top',  // 'top' | 'bottom'
+    },
+    // Shaded region
+    {
+      type: 'region',
+      x: 'Apr',              // Start category
+      x2: 'Jun',             // End category
+      backgroundColor: 'rgba(0,0,0,0.05)',
+      color: '#666',         // Border color (optional)
+    }
+  ]
 }
 ```
 
@@ -166,9 +207,32 @@ chart.destroy();
 }
 ```
 
+### Click Events
+
+Charts emit click events with data point information:
+
+```typescript
+document.addEventListener('swp-chart-click', (e) => {
+  const { type, x, points } = e.detail;
+  // type: 'line' | 'bar' | 'pie'
+  // x: category name (not for pie)
+  // points: [{ id, seriesName, value, color, unit, percent }]
+  console.log('Clicked:', points);
+});
+
+// Add IDs to data points for tracking
+const series = [{
+  name: 'Revenue',
+  data: [
+    { x: 'Q1', y: 1000, id: 'rev-q1-2024' },
+    { x: 'Q2', y: 1200, id: 'rev-q2-2024' },
+  ]
+}];
+```
+
 ## Examples
 
-### Smooth Curves (Default)
+### Line Chart with Smooth Curves
 
 ```typescript
 createChart(el, {
@@ -178,54 +242,6 @@ createChart(el, {
     color: '#8b5cf6',
     data: [{ x: 'Mar', y: 350 }, { x: 'Jun', y: 850 }]
   }]
-});
-```
-
-### Linear Lines with Dot Points
-
-```typescript
-createChart(el, {
-  xAxis: { categories: months },
-  series: [{
-    name: 'Revenue',
-    color: '#10b981',
-    data: [...],
-    line: { curve: 'linear', width: 2 },
-    point: { style: 'dot', radius: 4 },
-    showArea: false
-  }]
-});
-```
-
-### Multiple Series with Sparse Data
-
-```typescript
-createChart(el, {
-  xAxis: { categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] },
-  series: [
-    {
-      name: 'Team A',
-      color: '#3b82f6',
-      data: [{ x: 'Feb', y: 200 }, { x: 'May', y: 450 }]
-    },
-    {
-      name: 'Team B',
-      color: '#ef4444',
-      data: [{ x: 'Jan', y: 150 }, { x: 'Apr', y: 320 }]
-    }
-  ],
-  legend: true
-});
-```
-
-### Fixed Size Chart
-
-```typescript
-createChart(el, {
-  width: 620,
-  height: 215,
-  xAxis: { categories: months },
-  series: [...]
 });
 ```
 
@@ -246,45 +262,11 @@ createChart(el, {
     ],
     bar: { width: 30, radius: 4 }
   }],
-  yAxis: { format: (v) => v + ' kr' },
   legend: true
 });
 ```
 
-### Grouped Bar Chart
-
-```typescript
-createChart(el, {
-  xAxis: { categories: ['Q1', 'Q2', 'Q3', 'Q4'] },
-  series: [
-    {
-      name: '2023',
-      color: '#3b82f6',
-      type: 'bar',
-      data: [
-        { x: 'Q1', y: 320 },
-        { x: 'Q2', y: 450 },
-        { x: 'Q3', y: 280 },
-        { x: 'Q4', y: 520 },
-      ]
-    },
-    {
-      name: '2024',
-      color: '#10b981',
-      type: 'bar',
-      data: [
-        { x: 'Q1', y: 420 },
-        { x: 'Q2', y: 580 },
-        { x: 'Q3', y: 350 },
-        { x: 'Q4', y: 720 },
-      ]
-    }
-  ],
-  legend: { position: 'top', align: 'end' }
-});
-```
-
-### Pie Chart
+### Pie / Donut Chart
 
 ```typescript
 createChart(el, {
@@ -293,157 +275,76 @@ createChart(el, {
   series: [
     { name: 'Produkter', color: '#8b5cf6', type: 'pie', data: [{ x: '', y: 350 }] },
     { name: 'Services', color: '#3b82f6', type: 'pie', data: [{ x: '', y: 280 }] },
-    { name: 'Licenser', color: '#10b981', type: 'pie', data: [{ x: '', y: 180 }] },
     { name: 'Support', color: '#f59e0b', type: 'pie', data: [{ x: '', y: 120 }] },
   ],
   legend: true
 });
+
+// Donut: add innerRadius
+{ pie: { innerRadius: 40 } }
 ```
 
-### Donut Chart
+### Dual Y-Axis with Annotations
 
 ```typescript
 createChart(el, {
-  width: 450,
-  height: 300,
-  series: [
-    { name: 'Q1', color: '#8b5cf6', type: 'pie', data: [{ x: '', y: 420 }], pie: { innerRadius: 40 } },
-    { name: 'Q2', color: '#3b82f6', type: 'pie', data: [{ x: '', y: 580 }], pie: { innerRadius: 40 } },
-    { name: 'Q3', color: '#10b981', type: 'pie', data: [{ x: '', y: 350 }], pie: { innerRadius: 40 } },
-    { name: 'Q4', color: '#f59e0b', type: 'pie', data: [{ x: '', y: 720 }], pie: { innerRadius: 40 } },
-  ],
-  legend: { position: 'right', align: 'center' }
-});
-```
-
-### Pie Chart with Breakdown
-
-Use multiple data points per series to show breakdown details in tooltip:
-
-```typescript
-createChart(el, {
-  width: 400,
-  height: 300,
-  series: [
-    {
-      name: 'Syg',
-      color: '#ef4444',
-      type: 'pie',
-      unit: 't',
-      data: [
-        { x: 'Henrik', y: 2 },
-        { x: 'Peter', y: 10 },
-      ]
-    },
-    {
-      name: 'Ferie',
-      color: '#3b82f6',
-      type: 'pie',
-      unit: 't',
-      data: [
-        { x: 'Henrik', y: 5 },
-        { x: 'Peter', y: 3 },
-      ]
-    },
-  ],
-  legend: true,
-  tooltip: { fontSize: 14 }
-});
-```
-
-Legend shows: `Syg 12 t`, `Ferie 8 t`
-
-Tooltip on hover shows breakdown:
-```
-Syg
-12 t (60.0%)
-  Henrik: 2 t
-  Peter: 10 t
-```
-
-### Dual Y-Axis
-
-```typescript
-createChart(el, {
-  xAxis: { categories: ['Jan', 'Feb', 'Mar'] },
+  xAxis: { categories: weeks },
   yAxis: [
-    { min: 0, max: 100000, format: (v) => `${v/1000}k` },  // Left axis
-    { min: 0, max: 100, format: (v) => `${v}%` },          // Right axis
+    { min: 0, max: 100000, format: v => `${v/1000}k` },
+    { min: 0, max: 100, format: v => `${v}%` },
   ],
   series: [
-    { name: 'Revenue', color: '#3b82f6', type: 'bar', yAxisIndex: 0, data: [...] },
-    { name: 'Utilization', color: '#10b981', type: 'line', yAxisIndex: 1, data: [...] },
-  ],
-});
-```
-
-### Dashed Lines
-
-```typescript
-{
-  name: 'Forecast',
-  color: '#10b981',
-  type: 'line',
-  line: { dashArray: '5,5' },  // Creates dashed line
-  data: [...]
-}
-```
-
-### Annotations (Vertical Lines)
-
-```typescript
-createChart(el, {
-  // ... series and axes
-  annotations: [
     {
-      type: 'verticalLine',
-      x: 'Mar',              // Category name or index
-      color: '#666',
-      label: 'Nu',
-      labelPosition: 'top',  // 'top' | 'bottom'
-    }
+      name: 'Revenue',
+      color: '#3b82f6',
+      type: 'bar',
+      yAxisIndex: 0,
+      data: actualRevenue,
+    },
+    {
+      name: 'Revenue (forecast)',
+      color: '#3b82f6',
+      type: 'bar',
+      yAxisIndex: 0,
+      data: forecastRevenue,
+      bar: { opacity: 0.35 },
+    },
+    {
+      name: 'Utilization',
+      color: '#10b981',
+      type: 'line',
+      yAxisIndex: 1,
+      data: actualUtil,
+      line: { width: 2.5 },
+      point: { radius: 0 },
+      showArea: false,
+    },
+    {
+      name: 'Utilization (forecast)',
+      color: '#10b981',
+      type: 'line',
+      yAxisIndex: 1,
+      data: forecastUtil,
+      line: { width: 2.5, dashArray: '4 4' },
+      point: { radius: 0 },
+      showArea: false,
+    },
   ],
+  annotations: [
+    { type: 'region', x: 'Uge 1', x2: 'Uge 12', backgroundColor: 'rgba(0,0,0,0.03)' },
+    { type: 'verticalLine', x: 'Uge 52', dashArray: '4 4', label: 'Nu' },
+  ],
+  legend: { position: 'top' },
+  padding: { right: 60 },
 });
 ```
-
-### Revenue/Utilization/Budget Combo Chart
-
-Pre-built combo chart for business metrics:
-
-```typescript
-import { createChart, createRevenueUtilizationBudgetChart } from '@sevenweirdpeople/swp-charting';
-
-const data = [
-  { time: 'Uge 48', index: -2, revenue: 45000, budget: 50000, utilization: 0.75, isForecast: false },
-  { time: 'Uge 49', index: -1, revenue: 52000, budget: 50000, utilization: 0.82, isForecast: false },
-  { time: 'Uge 50', index: 0, revenue: 55000, budget: 52000, utilization: 0.85, isForecast: false },
-  { time: 'Uge 51', index: 1, revenue: 60000, budget: 55000, utilization: 0.90, isForecast: true },
-  { time: 'Uge 52', index: 2, revenue: 58000, budget: 55000, utilization: 0.88, isForecast: true },
-];
-
-const options = createRevenueUtilizationBudgetChart(data, {
-  width: 700,
-  height: 400,
-  showLegend: true,
-  nowLabel: 'Nu',
-});
-
-createChart(document.getElementById('chart'), options);
-```
-
-Features:
-- Revenue as bars (left Y-axis, DKK)
-- Utilization as line (right Y-axis, 0-100%)
-- Budget as line (left Y-axis, DKK)
-- Solid lines/bars for actual, dashed/transparent for forecast
-- Vertical "Now" line at index = 0
 
 ## Bundle Size
 
 | Format | Size |
 |--------|------|
-| Uncompressed | 47 KB |
-| Gzipped | **11 KB** |
+| Minified | 21 KB |
+| Gzipped | **8.5 KB** |
 
 ## Browser Support
 
