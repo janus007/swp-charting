@@ -228,3 +228,14 @@ export interface ChartClickPoint {
   unit?: string;
   percent?: number;  // Only for pie
 }
+
+export interface ChartSelectEventDetail {
+  type: 'bar' | 'line';
+  points: ChartClickPoint[];
+  bounds: {
+    x1: string;  // Start category
+    x2: string;  // End category
+    y1: number;  // Min value
+    y2: number;  // Max value
+  };
+}

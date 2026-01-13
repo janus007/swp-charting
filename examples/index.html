@@ -255,9 +255,9 @@ chart.<span style="color:#dcdcaa">destroy</span>();                  <span style
 
     <div class="event-log-column">
       <div class="event-log">
-        <h3>Click Events</h3>
+        <h3>Chart Events</h3>
         <div id="event-log-content">
-          <div class="event-log-empty">Klik på et chart element for at se events...</div>
+          <div class="event-log-empty">Klik eller træk for at markere punkter...</div>
         </div>
       </div>
     </div>
@@ -753,6 +753,38 @@ chart.<span style="color:#dcdcaa">destroy</span>();                  <span style
       entry.className = 'event-log-entry';
       entry.innerHTML = `
         <div class="event-log-type">#${eventCount} ${detail.type}${detail.x ? ` @ "${detail.x}"` : ''}</div>
+        <pre>${JSON.stringify(detail, null, 2)}</pre>
+      `;
+
+      // Fjern "empty" besked hvis den findes
+      const emptyMsg = eventLogContent.querySelector('.event-log-empty');
+      if (emptyMsg) emptyMsg.remove();
+
+      // Indsæt øverst
+      eventLogContent.insertBefore(entry, eventLogContent.firstChild);
+
+      // Behold kun de 10 seneste
+      while (eventLogContent.children.length > 10) {
+        eventLogContent.removeChild(eventLogContent.lastChild);
+      }
+    });
+
+    // =========================================================================
+    // SELECT EVENT LISTENER (rectangle selection)
+    // =========================================================================
+    document.addEventListener('swp-chart-select', (e) => {
+      const detail = e.detail;
+      eventCount++;
+
+      // Log til console
+      console.log('swp-chart-select:', detail);
+
+      // Tilføj event til log (nyeste først)
+      const entry = document.createElement('div');
+      entry.className = 'event-log-entry';
+      entry.style.borderLeftColor = '#3b82f6';  // Blå kant for select events
+      entry.innerHTML = `
+        <div class="event-log-type">#${eventCount} SELECT (${detail.points.length} points)</div>
         <pre>${JSON.stringify(detail, null, 2)}</pre>
       `;
 

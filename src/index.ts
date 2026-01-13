@@ -25,4 +25,5 @@ export type {
   AnnotationConfig,
   ChartClickEventDetail,
   ChartClickPoint,
+  ChartSelectEventDetail,
 } from './types';

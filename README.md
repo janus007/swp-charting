@@ -13,7 +13,7 @@ A lightweight, zero-dependency SVG charting library for TypeScript/JavaScript.
 - **Annotations** — Vertical lines and shaded regions
 - **Smooth curves** — Monotone cubic spline (Fritsch-Carlson) prevents overshoot
 - **Responsive** — Auto-resize with ResizeObserver
-- **Interactive** — Hover tooltips, click events with data IDs
+- **Interactive** — Hover tooltips, click events, rectangle selection
 - **Customizable** — Line styles, point styles, bar styles, pie styles, legends
 
 ## Installation
@@ -230,6 +230,20 @@ const series = [{
 }];
 ```
 
+### Rectangle Selection
+
+Select multiple data points by dragging a rectangle over the chart. Selected elements are highlighted during drag, and the selection persists until the next click.
+
+```typescript
+document.addEventListener('swp-chart-select', (e) => {
+  const { type, points, bounds } = e.detail;
+  // type: 'line' | 'bar'
+  // points: [{ id, seriesName, seriesIndex, value, color, unit }, ...]
+  // bounds: { x1: 'startCategory', x2: 'endCategory', y1: minValue, y2: maxValue }
+  console.log(`Selected ${points.length} points from ${bounds.x1} to ${bounds.x2}`);
+});
+```
+
 ## Examples
 
 ### Line Chart with Smooth Curves
@@ -343,8 +357,8 @@ createChart(el, {
 
 | Format | Size |
 |--------|------|
-| Minified | 21 KB |
-| Gzipped | **8.5 KB** |
+| Minified | 24 KB |
+| Gzipped | **8.9 KB** |
 
 ## Browser Support
 
